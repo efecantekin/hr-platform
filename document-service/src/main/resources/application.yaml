@@ -1,0 +1,19 @@
+server:
+  port: 8084 # Employee:8081, Auth:8082, Leave:8083, Doc:8084
+
+spring:
+  application:
+    name: document-service
+  
+  datasource:
+    # Docker'daki doc_db veritabanı (init script ile açmıştık)
+    url: jdbc:postgresql://localhost:5432/doc_db
+    username: hr_admin
+    password: hr_password
+    driver-class-name: org.postgresql.Driver
+  
+  jpa:
+    database-platform: org.hibernate.dialect.PostgreSQLDialect
+    hibernate:
+      ddl-auto: update
+    show-sql: true

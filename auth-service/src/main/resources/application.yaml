@@ -1,0 +1,24 @@
+server:
+  port: 8082 # Auth servisi 8082 portunda çalışacak
+
+spring:
+  application:
+    name: auth-service
+  
+  datasource:
+    # Auth için ayrı veritabanı açmıştık (init script ile)
+    url: jdbc:postgresql://localhost:5432/auth_db
+    username: hr_admin
+    password: hr_password
+    driver-class-name: org.postgresql.Driver
+  
+  jpa:
+    database-platform: org.hibernate.dialect.PostgreSQLDialect
+    hibernate:
+      ddl-auto: update
+    show-sql: true
+
+# JWT işlemleri için gizli anahtarımız (Bunu ileride kullanacağız)
+jwt:
+  secret: BuCokGizliVeUzunBirAnahtarOlmali32KarakterdenUzunOlsunLutfen123456
+  expiration: 86400000 # 1 gün (milisaniye)

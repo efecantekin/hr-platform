@@ -1,0 +1,115 @@
+version: '3.8'
+
+services:
+  # 1. VERİTABANI
+  postgres-db:
+    image: postgres:15-alpine
+    container_name: hr-postgres
+    environment:
+      - POSTGRES_USER=hr_admin
+      - POSTGRES_PASSWORD=hr_password
+      - POSTGRES_DB=hr_main_db
+    ports:
+      - "5432:5432"
+    volumes:
+      - ./postgres-data:/var/lib/postgresql/data
+      - ./init-scripts:/docker-entrypoint-initdb.d
+    networks:
+      - hr-network
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U hr_admin -d hr_main_db"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # 2. AUTH SERVICE
+  auth-service:
+    build: ./auth-service
+    container_name: hr-auth
+    ports:
+      - "8082:8082"
+    environment:
+      - SPRING_DATASOURCE_URL=jdbc:postgresql://postgres-db:5432/auth_db
+    depends_on:
+      postgres-db:
+        condition: service_healthy
+    networks:
+      - hr-network
+
+  # 3. EMPLOYEE SERVICE
+  employee-service:
+    build: ./employee-service
+    container_name: hr-employee
+    ports:
+      - "8081:8081"
+    environment:
+      - SPRING_DATASOURCE_URL=jdbc:postgresql://postgres-db:5432/employee_db
+      - AUTH_URI=http://auth-service:8082
+    depends_on:
+      postgres-db:
+        condition: service_healthy
+    networks:
+      - hr-network
+
+  # 4. LEAVE SERVICE
+  leave-service:
+    build: ./leave-service
+    container_name: hr-leave
+    ports:
+      - "8083:8083"
+    environment:
+      - SPRING_DATASOURCE_URL=jdbc:postgresql://postgres-db:5432/leave_db
+    depends_on:
+      postgres-db:
+        condition: service_healthy
+    networks:
+      - hr-network
+
+  # 5. DOCUMENT SERVICE
+  document-service:
+    build: ./document-service
+    container_name: hr-document
+    ports:
+      - "8084:8084"
+    environment:
+      - SPRING_DATASOURCE_URL=jdbc:postgresql://postgres-db:5432/doc_db
+    depends_on:
+      postgres-db:
+        condition: service_healthy
+    networks:
+      - hr-network
+
+  # 6. API GATEWAY (Orkestra Şefi)
+  api-gateway:
+    build: ./api-gateway
+    container_name: hr-gateway
+    ports:
+      - "8080:8080"
+    environment:
+      # Gateway'e diğer servislerin Docker içindeki adreslerini söylüyoruz
+      - EMPLOYEE_URI=http://employee-service:8081
+      - AUTH_URI=http://auth-service:8082
+      - LEAVE_URI=http://leave-service:8083
+      - DOC_URI=http://document-service:8084
+    depends_on:
+      - auth-service
+      - employee-service
+      - leave-service
+      - document-service
+    networks:
+      - hr-network
+
+  # 7. FRONTEND (Next.js)
+  hr-frontend:
+    build: ./hr-frontend
+    container_name: hr-frontend-app
+    ports:
+      - "3000:3000"
+    networks:
+      - hr-network
+    # Not: Frontend tarayıcıda çalıştığı için API'ye yine localhost üzerinden erişecek.
+    # O yüzden ekstra environment ayarına gerek yok.
+
+networks:
+  hr-network:
+    driver: bridge

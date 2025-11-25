@@ -1,0 +1,47 @@
+server:
+  port: 8080
+
+spring:
+  application:
+    name: api-gateway
+  
+  cloud:
+    gateway:
+      routes:
+        # 1. Employee Service
+        - id: employee-service
+          # Eğer EMPLOYEE_URI tanımlıysa onu kullan, yoksa localhost:8081 kullan
+          uri: ${EMPLOYEE_URI:http://localhost:8081}
+          predicates:
+            - Path=/api/employees/**, /api/teams/**
+          filters:
+            - AuthenticationFilter
+
+        # 2. Auth Service
+        - id: auth-service
+          uri: ${AUTH_URI:http://localhost:8082}
+          predicates:
+            - Path=/auth/**
+
+        # 3. Leave Service
+        - id: leave-service
+          uri: ${LEAVE_URI:http://localhost:8083}
+          predicates:
+            - Path=/api/leaves/**
+          filters:
+            - AuthenticationFilter
+
+        # 4. Document Service
+        - id: document-service
+          uri: ${DOC_URI:http://localhost:8084}
+          predicates:
+            - Path=/api/documents/**
+          filters:
+            - AuthenticationFilter
+
+# Actuator ayarları (ayrı bir blok olmalı)
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health, info

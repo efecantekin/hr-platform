@@ -1,0 +1,26 @@
+# --- Java & Maven (Backend) ---
+target/
+!.mvn/wrapper/maven-wrapper.jar
+!**/src/main/**/target/
+*.class
+
+# --- Node & Next.js (Frontend) ---
+node_modules/
+.next/
+out/
+build/
+.env.local
+
+# --- IDE & Sistem Dosyaları ---
+.idea/
+.vscode/
+*.iml
+.DS_Store
+Thumbs.db
+
+# --- Docker & Veritabanı ---
+postgres-data/
+.env
+
+# --- Loglar ---
+*.log

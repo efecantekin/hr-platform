@@ -1,0 +1,19 @@
+server:
+  port: 8083 # Employee 8081, Auth 8082, Leave 8083 olsun
+
+spring:
+  application:
+    name: leave-service
+  
+  datasource:
+    # Docker'daki leave_db'ye bağlanacak
+    url: jdbc:postgresql://localhost:5432/leave_db
+    username: hr_admin
+    password: hr_password
+    driver-class-name: org.postgresql.Driver
+  
+  jpa:
+    database-platform: org.hibernate.dialect.PostgreSQLDialect
+    hibernate:
+      ddl-auto: update
+    show-sql: true

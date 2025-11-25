@@ -1,0 +1,29 @@
+server:
+  port: 8081
+
+spring:
+  application:
+    name: employee-service
+  
+  datasource:
+    url: jdbc:postgresql://localhost:5432/employee_db
+    username: hr_admin
+    password: hr_password
+    driver-class-name: org.postgresql.Driver
+  
+  jpa:
+    database-platform: org.hibernate.dialect.PostgreSQLDialect
+    hibernate:
+      ddl-auto: update
+    show-sql: true
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health, info
+        
+# Feign Client Ayarı
+# Docker içinde çalışırken "http://auth-service:8082" adresini kullanacak
+# Localde çalışırken "http://localhost:8082" adresini kullanacak (varsayılan)
+AUTH_SERVICE_URL: ${AUTH_URI:http://localhost:8082}
