@@ -1,6 +1,7 @@
 package com.hr.employee.service;
 
 import com.hr.employee.client.AuthClient;
+import com.hr.employee.dto.HierarchyAssignmentRequest;
 import com.hr.employee.dto.RegisterRequest;
 import com.hr.employee.entity.Employee;
 import com.hr.employee.repository.EmployeeRepository;
@@ -61,15 +62,31 @@ public class EmployeeService {
     }
 
     // 4. Yönetici Ata (Hiyerarşi için)
-    public Employee assignManager(Long employeeId, Long managerId) {
-        Employee employee = getEmployeeById(employeeId);
+    @Transactional
+    public Employee assignHierarchy(HierarchyAssignmentRequest request) {
         
-        if (employeeId.equals(managerId)) {
-            throw new RuntimeException("Kişi kendi kendisinin yöneticisi olamaz!");
+        // ... Yeni pozisyon ve atama mantığı burada ...
+        
+        // 1. Yöneticinin Pozisyonunu Güncelle
+        if (request.getManagerPosition() != null && !request.getManagerPosition().trim().isEmpty()) {
+            Employee manager = repository.findById(request.getManagerId())
+                                        .orElseThrow(() -> new RuntimeException("Yönetici bulunamadı."));
+            
+            manager.setPosition(request.getManagerPosition());
+            repository.save(manager);
         }
-
-        employee.setManagerId(managerId);
-        return repository.save(employee);
+        
+        // 2. Ast'ı Yöneticiye Bağla
+        Employee subordinate = repository.findById(request.getSubordinateId())
+                                        .orElseThrow(() -> new RuntimeException("Çalışan bulunamadı."));
+        
+        // Atama kontrolü
+        if (request.getSubordinateId().equals(request.getManagerId())) {
+            throw new RuntimeException("Kişi kendi kendini atayamaz.");
+        }
+        
+        subordinate.setManagerId(request.getManagerId());
+        return repository.save(subordinate);
     }
 
     // 5. Yöneticisi Olmayanları Getir (Org. Şeması kökleri için)

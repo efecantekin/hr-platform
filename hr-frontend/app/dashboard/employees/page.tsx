@@ -30,6 +30,7 @@ export default function EmployeesPage() {
     email: "",
     department: "IT", // Varsayılan
     jobTitle: "",
+    position: "",
     phoneNumber: "",
     hireDate: new Date().toISOString().split('T')[0] // Bugünün tarihi
   });
@@ -37,7 +38,7 @@ export default function EmployeesPage() {
   useEffect(() => {
     const t = localStorage.getItem("token");
     const r = localStorage.getItem("role");
-    
+
     // Sadece Admin ve Manager girebilsin
     if (!t || (r !== "ADMIN" && r !== "MANAGER")) {
       alert("Yetkisiz erişim!");
@@ -69,12 +70,12 @@ export default function EmployeesPage() {
       await axios.post("http://localhost:8080/api/employees", formData, {
         headers: { Authorization: `Bearer ${token}` },
       });
-      
+
       alert("Personel başarıyla eklendi!");
       setShowModal(false);
       // Formu temizle
       setFormData({
-        firstName: "", lastName: "", email: "", department: "IT", jobTitle: "", phoneNumber: "", hireDate: ""
+        firstName: "", lastName: "", email: "", department: "IT", jobTitle: "", position: "", phoneNumber: "", hireDate: ""
       });
       // Listeyi yenile
       fetchEmployees(token);
@@ -94,13 +95,13 @@ export default function EmployeesPage() {
       <div className="flex justify-between items-center mb-6">
         <h1 className="text-2xl font-bold text-gray-800">Personel Yönetimi</h1>
         <div className="space-x-4">
-             <button onClick={() => router.push("/dashboard")} className="text-gray-600 hover:text-gray-900">← Geri</button>
-             <button 
-                onClick={() => setShowModal(true)} 
-                className="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700 shadow"
-             >
-                + Yeni Çalışan Ekle
-             </button>
+          <button onClick={() => router.push("/dashboard")} className="text-gray-600 hover:text-gray-900">← Geri</button>
+          <button
+            onClick={() => setShowModal(true)}
+            className="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700 shadow"
+          >
+            + Yeni Çalışan Ekle
+          </button>
         </div>
       </div>
 
@@ -136,9 +137,9 @@ export default function EmployeesPage() {
         <div className="fixed inset-0 bg-gray-900 bg-opacity-50 flex items-center justify-center z-50">
           <div className="bg-white p-8 rounded-lg shadow-xl w-[500px]">
             <h2 className="text-xl font-bold text-gray-800 mb-6">Yeni Çalışan Kartı</h2>
-            
+
             <form onSubmit={handleCreate} className="grid grid-cols-2 gap-4">
-              
+
               {/* Ad */}
               <div className="col-span-1">
                 <label className="block text-xs font-bold text-gray-700 mb-1">Ad</label>
@@ -161,10 +162,10 @@ export default function EmployeesPage() {
               <div className="col-span-1">
                 <label className="block text-xs font-bold text-gray-700 mb-1">Departman</label>
                 <select name="department" value={formData.department} onChange={handleChange} className="w-full border p-2 rounded text-sm text-black">
-                    <option value="IT">IT / Yazılım</option>
-                    <option value="HR">İnsan Kaynakları</option>
-                    <option value="SALES">Satış & Pazarlama</option>
-                    <option value="FINANCE">Finans</option>
+                  <option value="IT">IT / Yazılım</option>
+                  <option value="HR">İnsan Kaynakları</option>
+                  <option value="SALES">Satış & Pazarlama</option>
+                  <option value="FINANCE">Finans</option>
                 </select>
               </div>
 
@@ -172,6 +173,18 @@ export default function EmployeesPage() {
               <div className="col-span-1">
                 <label className="block text-xs font-bold text-gray-700 mb-1">Unvan</label>
                 <input name="jobTitle" value={formData.jobTitle} onChange={handleChange} placeholder="Örn: Senior Developer" className="w-full border p-2 rounded text-sm text-black" />
+              </div>
+
+              {/* YENİ: Pozisyon */}
+              <div className="col-span-1">
+                <label className="block text-xs font-bold text-gray-700 mb-1">Pozisyon / Rol</label>
+                <input
+                  name="position"
+                  value={formData.position}
+                  onChange={handleChange}
+                  placeholder="Örn: Takım Lideri"
+                  className="w-full border p-2 rounded text-sm text-black"
+                />
               </div>
 
               {/* Telefon */}
