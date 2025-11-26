@@ -84,6 +84,7 @@ export default function DashboardPage() {
 
         {/* Butonlar Grubu */}
         <div className="flex flex-wrap gap-4 mb-6">
+          {/* HERKESİN GÖRDÜĞÜ BUTONLAR */}
           <Link
             href="/dashboard/leaves"
             className="bg-green-600 text-white px-4 py-3 rounded shadow hover:bg-green-700 flex items-center gap-2"
@@ -105,24 +106,47 @@ export default function DashboardPage() {
             🌳 Org. Şeması
           </Link>
 
-          {/* Sadece ADMIN görebilir */}
+          {/* SADECE ADMIN GÖRSÜN (Yönetim Araçları) */}
           {userRole === "ADMIN" && (
-            <Link
-              href="/dashboard/hierarchy"
-              className="bg-gray-700 text-white px-4 py-3 rounded shadow hover:bg-gray-800 flex items-center gap-2"
-            >
-              ⚙️ Hiyerarşi Yönetimi
-            </Link>
-          )}
+            <>
+              <div className="w-full h-px bg-gray-300 my-2"></div> {/* Ayırıcı Çizgi */}
 
-          {/* PERSONEL YÖNETİMİ (Sadece ADMIN görebilir) */}
-          {userRole === "ADMIN" && (
-            <Link
-              href="/dashboard/employees"
-              className="bg-blue-800 text-white px-4 py-3 rounded shadow hover:bg-blue-900 flex items-center gap-2"
-            >
-              👥 Personel Listesi
-            </Link>
+              <Link
+                href="/dashboard/employees"
+                className="bg-blue-800 text-white px-4 py-3 rounded shadow hover:bg-blue-900 flex items-center gap-2"
+              >
+                👥 Personel
+              </Link>
+
+              <Link
+                href="/dashboard/hierarchy"
+                className="bg-gray-700 text-white px-4 py-3 rounded shadow hover:bg-gray-800 flex items-center gap-2"
+              >
+                ⚙️ Hiyerarşi
+              </Link>
+
+              {/* YENİ EKLENEN TANIMLAMA BUTONLARI */}
+              <Link
+                href="/dashboard/departments"
+                className="bg-teal-600 text-white px-4 py-3 rounded shadow hover:bg-teal-700 flex items-center gap-2"
+              >
+                🏢 Departmanlar
+              </Link>
+
+              <Link
+                href="/dashboard/job-titles"
+                className="bg-teal-600 text-white px-4 py-3 rounded shadow hover:bg-teal-700 flex items-center gap-2"
+              >
+                🏷️ Unvanlar
+              </Link>
+
+              <Link
+                href="/dashboard/positions"
+                className="bg-teal-600 text-white px-4 py-3 rounded shadow hover:bg-teal-700 flex items-center gap-2"
+              >
+                👑 Pozisyonlar
+              </Link>
+            </>
           )}
         </div>
 
