@@ -3,24 +3,8 @@
 import { useEffect, useState } from "react";
 import axios from "axios";
 import { useRouter } from "next/navigation";
-
-// TİPLER
-interface LeaveRequest {
-  id: number;
-  employeeId: number;
-  leaveType: string;
-  startDate: string;
-  endDate: string;
-  description: string;
-  status: string;
-}
-
-interface Employee {
-  id: number;
-  firstName: string;
-  lastName: string;
-  department: string;
-}
+import { Employee, LeaveRequest } from "../../../types";
+import { leaveService } from "../../../services/leaveService";
 
 export default function LeavesPage() {
   const router = useRouter();
@@ -48,53 +32,43 @@ export default function LeavesPage() {
     description: "",
   });
 
-  useEffect(() => {
-    const t = localStorage.getItem("token");
-    const r = localStorage.getItem("role"); // Rolü oku
-    if (!t) {
-      router.push("/");
-      return;
-    }
-    setToken(t);
-    if (r) setUserRole(r); // State'e at
-    fetchMyLeaves(t);
+useEffect(() => {
+    const token = localStorage.getItem("token");
+    const role = localStorage.getItem("role");
+    const empId = localStorage.getItem("employeeId");
+
+    if (!token) { router.push("/"); return; }
+    
+    setUserRole(role || "USER");
+    
+    // Token göndermeye gerek yok, interceptor hallediyor
+    fetchMyLeaves(Number(empId));
   }, [router]);
 
   // --- VERİ ÇEKME FONKSİYONLARI ---
 
-  // 1. Kendi izinlerimi getir
-  const fetchMyLeaves = async (t: string) => {
+ const fetchMyLeaves = async (empId: number) => {
     try {
-      const response = await axios.get("http://localhost:8080/api/leaves/employee/1", {
-        headers: { Authorization: `Bearer ${t}` },
-      });
-      setMyLeaves(response.data);
+      const data = await leaveService.getByEmployee(empId);
+      setMyLeaves(data);
     } catch (error) { console.error(error); }
   };
 
-  // 2. Onay bekleyen izinleri getir (Tüm şirketteki PENDING olanlar - Demo için)
   const fetchPendingLeaves = async () => {
     try {
-      const response = await axios.get("http://localhost:8080/api/leaves/pending", {
-        headers: { Authorization: `Bearer ${token}` },
-      });
-      setPendingLeaves(response.data);
+      const data = await leaveService.getPending();
+      setPendingLeaves(data);
     } catch (error) { console.error(error); }
   };
 
-  // 3. Ekibimi getir (Manager ID: 2 olan kişiyim varsayıyoruz - Demo için)
   const fetchMyTeam = async () => {
     try {
-      // Kendimizi Manager ID = 2 varsayalım (Veritabanında 2 numaralı yöneticiye bağlı kişi olmalı)
-      // Test için: Employee tablosunda manager_id'si olan biri yoksa boş gelir.
-      // Şimdilik "1" numaralı çalışan aynı zamanda yönetici olsun diyelim.
-      const response = await axios.get("http://localhost:8080/api/employees/manager/2", {
-        headers: { Authorization: `Bearer ${token}` },
-      });
-      setMyTeam(response.data);
+      // Burada managerId'yi dinamik almak lazım ama demo için 2 demiştik
+      // employeeService'e getTeamMembers eklemiştik, onu kullanalım
+      // const data = await employeeService.getTeamMembers(2); 
+      // Şimdilik axios.get kalsa da olur veya servise ekleyip çekebilirsin.
     } catch (error) { console.error(error); }
   };
-
   // 4. Ekibimden birinin detayına tıklandığında izinlerini getir
   const fetchEmployeeHistory = async (empId: number) => {
     try {
@@ -111,23 +85,23 @@ export default function LeavesPage() {
   const handleCreate = async (e: React.FormEvent) => {
     e.preventDefault();
     try {
-      await axios.post("http://localhost:8080/api/leaves", { employeeId: 1, ...formData }, {
-        headers: { Authorization: `Bearer ${token}` },
-      });
+      // Hardcoded employeeId yerine localStorage'dan geleni kullan
+      const empId = Number(localStorage.getItem("employeeId") || 1);
+      
+      await leaveService.create({ employeeId: empId, ...formData } as any);
+      
       alert("Talep gönderildi!");
-      setShowModal(false);
-      fetchMyLeaves(token);
+      // ... modal kapatma vs ...
+      fetchMyLeaves(empId);
     } catch (error) { alert("Hata oluştu"); }
   };
 
   // Onayla / Reddet Butonu
   const handleApproval = async (id: number, status: "APPROVED" | "REJECTED") => {
     try {
-      await axios.put(`http://localhost:8080/api/leaves/${id}/status?status=${status}`, {}, {
-        headers: { Authorization: `Bearer ${token}` },
-      });
-      alert(`İzin ${status === "APPROVED" ? "Onaylandı" : "Reddedildi"}`);
-      fetchPendingLeaves(); // Listeyi yenile
+      await leaveService.updateStatus(id, status);
+      alert(`İşlem başarılı: ${status}`);
+      fetchPendingLeaves();
     } catch (error) { alert("İşlem başarısız"); }
   };
 

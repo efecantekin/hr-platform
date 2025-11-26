@@ -4,6 +4,8 @@ import { useState } from "react";
 import axios from "axios";
 import { useRouter } from "next/navigation";
 
+import { authService } from "../services/authService"; // Servis importu
+
 export default function LoginPage() {
   const router = useRouter();
   
@@ -20,22 +22,15 @@ export default function LoginPage() {
     setError("");
 
     try {
-      // 1. Backend'e İstek At (Gateway üzerinden Auth Service'e)
-      const response = await axios.post("http://localhost:8080/auth/login", {
-        username: username,
-        password: password,
-      });
-
-      // 2. Token Geldi mi?
-      const { token, role, employeeId } = response.data;
+      const data = await authService.login({ username, password });
       
-      if (token) {
-        localStorage.setItem("token", token);
+      if (data.token) {
+        localStorage.setItem("token", data.token);
         localStorage.setItem("user", username);
         
         // YENİ: Rolü ve ID'yi de kaydet!
-        localStorage.setItem("role", role); 
-        localStorage.setItem("employeeId", employeeId.toString());
+        localStorage.setItem("role", data.role); 
+        localStorage.setItem("employeeId", data.employeeId.toString());
 
         router.push("/dashboard");
       }
