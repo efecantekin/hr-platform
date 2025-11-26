@@ -107,7 +107,6 @@ export default function JobTitlesPage() {
       <div className="flex justify-between items-center mb-6">
         <h1 className="text-2xl font-bold text-gray-800">Unvan (Job Title) Yönetimi</h1>
         <div className="flex gap-2">
-            <button onClick={() => router.push("/dashboard")} className="text-gray-600 px-4 hover:text-gray-900">← Geri</button>
             <button 
                 onClick={() => openModal()} 
                 className="bg-indigo-600 text-white px-4 py-2 rounded hover:bg-indigo-700 shadow transition"

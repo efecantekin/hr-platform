@@ -1,205 +1,41 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import axios from "axios";
-import { useRouter } from "next/navigation";
-import Link from "next/link"; // Link bileşeni import edilmeli
-
-interface Employee {
-  id: number;
-  firstName: string;
-  lastName: string;
-  email: string;
-  department: string;
-  jobTitle: string;
-}
 
 export default function DashboardPage() {
-  const router = useRouter();
-  const [employees, setEmployees] = useState<Employee[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState("");
-
-  // EKSİK OLAN KISIM BURASIYDI: Rolü tutacak değişken
-  const [userRole, setUserRole] = useState("");
+  const [username, setUsername] = useState("");
 
   useEffect(() => {
-    const token = localStorage.getItem("token");
-    const role = localStorage.getItem("role"); // Rolü hafızadan oku
-
-    if (!token) {
-      router.push("/");
-      return;
-    }
-
-    // Rolü state'e kaydet
-    if (role) setUserRole(role);
-
-    fetchEmployees(token);
-  }, [router]);
-
-  const fetchEmployees = async (token: string) => {
-    try {
-      const response = await axios.get("http://localhost:8080/api/employees", {
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
-      });
-      setEmployees(response.data);
-    } catch (err) {
-      console.error("Veri çekme hatası:", err);
-      setError("Veriler yüklenemedi.");
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  const handleLogout = () => {
-    localStorage.removeItem("token");
-    localStorage.removeItem("user");
-    localStorage.removeItem("role"); // Çıkışta rolü de sil
-    localStorage.removeItem("employeeId");
-    router.push("/");
-  };
-
-  if (loading) return <div className="p-10 text-center">Yükleniyor...</div>;
+    setUsername(localStorage.getItem("user") || "Kullanıcı");
+  }, []);
 
   return (
-    <div className="min-h-screen bg-gray-50">
-      <nav className="bg-white shadow p-4 flex justify-between items-center">
-        <h1 className="text-xl font-bold text-blue-600">HR Platform</h1>
-        <div className="flex items-center gap-4">
-          <span className="text-gray-600">Hoşgeldin, {typeof window !== 'undefined' ? localStorage.getItem("user") : ""}</span>
-          <button
-            onClick={handleLogout}
-            className="bg-red-500 text-white px-4 py-2 rounded hover:bg-red-600 text-sm"
-          >
-            Çıkış Yap
-          </button>
+    <div className="bg-white shadow rounded-lg p-8 text-center">
+      <div className="mb-6">
+        <span className="text-6xl">👋</span>
+      </div>
+      <h1 className="text-3xl font-bold text-gray-800 mb-4">
+        Hoş Geldin, <span className="text-blue-600">{username}</span>!
+      </h1>
+      <p className="text-gray-600 max-w-2xl mx-auto text-lg">
+        İnsan Kaynakları Yönetim Platformuna başarıyla giriş yaptın.
+        Yukarıdaki menüyü kullanarak işlemlerini gerçekleştirebilirsin.
+      </p>
+      
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mt-10 text-left">
+        <div className="p-6 border rounded-lg hover:shadow-md transition bg-blue-50 border-blue-100">
+          <h3 className="font-bold text-blue-800 mb-2">📅 İzin Durumu</h3>
+          <p className="text-sm text-blue-600">Yıllık izin bakiyeni görüntüle ve yeni izin talebi oluştur.</p>
         </div>
-      </nav>
-
-      <main className="p-8">
-        <h2 className="text-2xl font-semibold mb-6 text-gray-800">Personel Listesi</h2>
-
-        {/* Butonlar Grubu */}
-        <div className="flex flex-wrap gap-4 mb-6">
-          {/* HERKESİN GÖRDÜĞÜ BUTONLAR */}
-          <Link
-            href="/dashboard/leaves"
-            className="bg-green-600 text-white px-4 py-3 rounded shadow hover:bg-green-700 flex items-center gap-2"
-          >
-            📅 İzin Yönetimi
-          </Link>
-
-          <Link
-            href="/dashboard/documents"
-            className="bg-purple-600 text-white px-4 py-3 rounded shadow hover:bg-purple-700 flex items-center gap-2"
-          >
-            📄 Belge Talepleri
-          </Link>
-
-          <Link
-            href="/dashboard/organization"
-            className="bg-indigo-600 text-white px-4 py-3 rounded shadow hover:bg-indigo-700 flex items-center gap-2"
-          >
-            🌳 Org. Şeması
-          </Link>
-
-          {/* SADECE ADMIN GÖRSÜN (Yönetim Araçları) */}
-          {userRole === "ADMIN" && (
-            <>
-              <div className="w-full h-px bg-gray-300 my-2"></div> {/* Ayırıcı Çizgi */}
-
-              <Link
-                href="/dashboard/employees"
-                className="bg-blue-800 text-white px-4 py-3 rounded shadow hover:bg-blue-900 flex items-center gap-2"
-              >
-                👥 Personel
-              </Link>
-
-              <Link
-                href="/dashboard/hierarchy"
-                className="bg-gray-700 text-white px-4 py-3 rounded shadow hover:bg-gray-800 flex items-center gap-2"
-              >
-                ⚙️ Hiyerarşi
-              </Link>
-
-              {/* YENİ EKLENEN TANIMLAMA BUTONLARI */}
-              <Link
-                href="/dashboard/departments"
-                className="bg-teal-600 text-white px-4 py-3 rounded shadow hover:bg-teal-700 flex items-center gap-2"
-              >
-                🏢 Departmanlar
-              </Link>
-
-              <Link
-                href="/dashboard/job-titles"
-                className="bg-teal-600 text-white px-4 py-3 rounded shadow hover:bg-teal-700 flex items-center gap-2"
-              >
-                🏷️ Unvanlar
-              </Link>
-
-              <Link
-                href="/dashboard/positions"
-                className="bg-teal-600 text-white px-4 py-3 rounded shadow hover:bg-teal-700 flex items-center gap-2"
-              >
-                👑 Pozisyonlar
-              </Link>
-            </>
-          )}
+        <div className="p-6 border rounded-lg hover:shadow-md transition bg-purple-50 border-purple-100">
+          <h3 className="font-bold text-purple-800 mb-2">📄 Belge İşlemleri</h3>
+          <p className="text-sm text-purple-600">Çalışma belgesi, bordro gibi resmi evraklarını talep et.</p>
         </div>
-
-        {error && <div className="text-red-500 mb-4">{error}</div>}
-
-        <div className="bg-white shadow rounded-lg overflow-hidden">
-          <table className="min-w-full leading-normal">
-            <thead>
-              <tr>
-                <th className="px-5 py-3 border-b-2 border-gray-200 bg-gray-100 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">
-                  Ad Soyad
-                </th>
-                <th className="px-5 py-3 border-b-2 border-gray-200 bg-gray-100 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">
-                  Departman
-                </th>
-                <th className="px-5 py-3 border-b-2 border-gray-200 bg-gray-100 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">
-                  Unvan
-                </th>
-                <th className="px-5 py-3 border-b-2 border-gray-200 bg-gray-100 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">
-                  Email
-                </th>
-              </tr>
-            </thead>
-            <tbody>
-              {employees.map((emp) => (
-                <tr key={emp.id}>
-                  <td className="px-5 py-5 border-b border-gray-200 bg-white text-sm">
-                    <p className="text-gray-900 whitespace-no-wrap">
-                      {emp.firstName} {emp.lastName}
-                    </p>
-                  </td>
-                  <td className="px-5 py-5 border-b border-gray-200 bg-white text-sm">
-                    <span className="relative inline-block px-3 py-1 font-semibold text-green-900 leading-tight">
-                      <span aria-hidden className="absolute inset-0 bg-green-200 opacity-50 rounded-full"></span>
-                      <span className="relative">{emp.department}</span>
-                    </span>
-                  </td>
-                  <td className="px-5 py-5 border-b border-gray-200 bg-white text-sm">
-                    <p className="text-gray-900 whitespace-no-wrap">{emp.jobTitle}</p>
-                  </td>
-                  <td className="px-5 py-5 border-b border-gray-200 bg-white text-sm">
-                    <p className="text-gray-900 whitespace-no-wrap">{emp.email}</p>
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-
-          {employees.length === 0 && (
-            <div className="p-4 text-center text-gray-500">Henüz çalışan kaydı yok.</div>
-          )}
+        <div className="p-6 border rounded-lg hover:shadow-md transition bg-green-50 border-green-100">
+          <h3 className="font-bold text-green-800 mb-2">🌳 Organizasyon</h3>
+          <p className="text-sm text-green-600">Şirket hiyerarşisini ve ekip arkadaşlarını incele.</p>
         </div>
-      </main>
+      </div>
     </div>
   );
 }
