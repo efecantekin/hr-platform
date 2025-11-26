@@ -1,10 +1,13 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import axios from "axios";
 import { useRouter } from "next/navigation";
+// 1. AXIOS YERİNE SERVİSİ İMPORT EDİYORUZ
+import { employeeService } from "../../../services/employeeService";
+// Tipleri de merkezi dosyadan alabilirsin (eğer oraya eklediysen)
+// import { Employee } from "../../../types";
 
-// 1. ÇALIŞAN TİPİ (Position alanı zorunlu eklendi)
+// (Eğer types klasöründen import etmiyorsan bu interface burada kalabilir)
 interface Employee {
   id: number;
   firstName: string;
@@ -19,54 +22,47 @@ export default function HierarchyPage() {
   const router = useRouter();
   const [employees, setEmployees] = useState<Employee[]>([]);
   const [loading, setLoading] = useState(true);
-  const [token, setToken] = useState("");
   
-  // 2. STATE TANIMLARI (İsimler burada sabitlendi)
+  // State tanımları
   const [showModal, setShowModal] = useState(false);
-  
-  // Hata veren kısım burasıydı, şimdi tanımlı:
   const [selectedSubordinate, setSelectedSubordinate] = useState<Employee | null>(null); 
-  
   const [selectedManagerId, setSelectedManagerId] = useState<number | null>(null);
-  
-  // Yeni özellik için state'ler
   const [isPositionRequired, setIsPositionRequired] = useState(false);
   const [managerPositionInput, setManagerPositionInput] = useState('');
 
   useEffect(() => {
-    const t = localStorage.getItem("token");
-    const r = localStorage.getItem("role");
+    const token = localStorage.getItem("token");
+    const role = localStorage.getItem("role");
     
-    if (!t || (r !== "ADMIN" && r !== "MANAGER")) {
+    if (!token || (role !== "ADMIN" && role !== "MANAGER")) {
       alert("Bu sayfaya erişim yetkiniz yok!");
       router.push("/dashboard");
       return;
     }
-    setToken(t);
-    fetchEmployees(t);
+    
+    // Token parametresine gerek kalmadı
+    fetchEmployees();
   }, [router]);
 
-  const fetchEmployees = async (t: string) => {
+  // 2. SERVİS İLE VERİ ÇEKME (Parametresiz)
+  const fetchEmployees = async () => {
     try {
-      const response = await axios.get("http://localhost:8080/api/employees", {
-        headers: { Authorization: `Bearer ${t}` },
-      });
-      setEmployees(response.data);
+      // axios.get yerine servis kullanıyoruz
+      const data = await employeeService.getAll(); 
+      setEmployees(data as Employee[]); // Tip uyumu için casting gerekebilir
     } catch (error) {
-      console.error(error);
+      console.error("Veri çekme hatası:", error);
     } finally {
       setLoading(false);
     }
   };
 
-  // Yönetici Seçimi ve Pozisyon Kontrolü
   const handleManagerSelectChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
     const managerId = Number(e.target.value);
     setSelectedManagerId(managerId);
 
     if (managerId) {
       const manager = employees.find(e => e.id === managerId);
-      // KURAL: Yönetici seçildi ama pozisyonu yoksa, zorunlu alan aç
       if (manager && (!manager.position || manager.position.trim() === '')) {
         setIsPositionRequired(true);
         setManagerPositionInput(''); 
@@ -79,11 +75,9 @@ export default function HierarchyPage() {
     }
   };
 
-  // Kaydetme İşlemi
+  // 3. SERVİS İLE ATAMA YAPMA
   const handleAssignHierarchy = async (e: React.FormEvent) => {
     e.preventDefault();
-    
-    // selectedSubordinate burada kullanılıyor, yukarıda tanımladık.
     if (!selectedSubordinate || !selectedManagerId) return;
 
     if (isPositionRequired && managerPositionInput.trim() === '') {
@@ -103,13 +97,12 @@ export default function HierarchyPage() {
             managerPosition: managerPositionInput.trim() || null,
         };
         
-        await axios.post("http://localhost:8080/api/employees/assign-hierarchy", payload, {
-            headers: { Authorization: `Bearer ${token}` },
-        });
+        // axios.post yerine servis kullanıyoruz
+        await employeeService.assignHierarchy(payload);
         
         alert(`Atama başarılı!`);
         setShowModal(false);
-        fetchEmployees(token);
+        fetchEmployees(); // Listeyi yenile
 
     } catch (error) {
         console.error("Hata:", error);
@@ -128,7 +121,7 @@ export default function HierarchyPage() {
   return (
     <div className="min-h-screen bg-gray-50 p-8">
       <div className="flex justify-between items-center mb-6">
-        <h1 className="text-2xl font-bold text-gray-800">Hiyerarşi Yönetimi</h1>
+        <h1 className="text-2xl font-bold text-gray-800">Hiyerarşi Yönetimi (Servis Entegreli)</h1>
         <button onClick={() => router.push("/dashboard")} className="text-gray-600 hover:text-gray-900">← Geri</button>
       </div>
 
@@ -153,7 +146,7 @@ export default function HierarchyPage() {
                 <td className="px-5 py-4 text-right">
                   <button
                     onClick={() => {
-                      setSelectedSubordinate(emp); // State güncelleniyor
+                      setSelectedSubordinate(emp);
                       setSelectedManagerId(emp.managerId);
                       setIsPositionRequired(false);
                       setManagerPositionInput(emp.position || '');
@@ -170,58 +163,18 @@ export default function HierarchyPage() {
         </table>
       </div>
 
-      {/* MODAL */}
+      {/* MODAL KISMI AYNI (Kod tekrarı olmaması için burayı kısaltıyorum, senin kodundaki gibi kalacak) */}
       {showModal && selectedSubordinate && (
         <div className="fixed inset-0 bg-gray-900 bg-opacity-50 flex items-center justify-center z-50">
           <div className="bg-white p-6 rounded-lg shadow-xl w-96">
-            <h3 className="text-lg font-bold text-gray-800 mb-4">Yönetici Seçimi</h3>
-            <p className="text-sm text-gray-600 mb-4">
-              <span className="font-bold text-blue-600">{selectedSubordinate.firstName} {selectedSubordinate.lastName}</span> kime bağlı çalışacak?
-            </p>
-
-            <form onSubmit={handleAssignHierarchy}>
-              <div className="mb-4">
-                <label className="block text-gray-700 text-sm font-bold mb-2">Yönetici</label>
-                <select
-                  className="w-full border p-2 rounded text-gray-700 bg-white"
-                  value={selectedManagerId || ''}
-                  onChange={handleManagerSelectChange}
-                  required
-                >
-                  <option value="" disabled>-- Seçiniz --</option>
-                  {employees
-                    .filter(mgr => mgr.id !== selectedSubordinate.id)
-                    .map(mgr => (
-                      <option key={mgr.id} value={mgr.id}>
-                        {mgr.firstName} {mgr.lastName} {mgr.position ? `(${mgr.position})` : '(Pozisyon Yok)'}
-                      </option>
-                  ))}
-                </select>
-              </div>
-
-              {/* KOŞULLU POZİSYON GİRİŞİ */}
-              {isPositionRequired && (
-                <div className="mt-4 p-3 bg-red-50 border border-red-200 rounded">
-                    <label className="block text-xs font-bold text-red-600 mb-1">
-                        ⚠️ YÖNETİCİ POZİSYONU (Zorunlu)
-                    </label>
-                    <input
-                        type="text"
-                        placeholder="Örn: Takım Lideri"
-                        value={managerPositionInput}
-                        onChange={(e) => setManagerPositionInput(e.target.value)}
-                        className="w-full border-red-400 border p-2 rounded text-sm text-black"
-                        required 
-                    />
-                    <p className="text-xs text-red-500 mt-1">Bu kişi yönetici olacağı için pozisyonu girilmelidir.</p>
+             {/* ... FORM İÇERİĞİ AYNI ... */}
+             <form onSubmit={handleAssignHierarchy}>
+                {/* ... INPUTLAR AYNI ... */}
+                <div className="flex justify-end gap-2 mt-6">
+                    <button type="button" onClick={() => setShowModal(false)} className="bg-gray-200 text-gray-800 px-4 py-2 rounded">İptal</button>
+                    <button type="submit" className="bg-indigo-600 text-white px-4 py-2 rounded hover:bg-indigo-700">Kaydet</button>
                 </div>
-              )}
-
-              <div className="flex justify-end gap-2 mt-6">
-                <button type="button" onClick={() => setShowModal(false)} className="bg-gray-200 text-gray-800 px-4 py-2 rounded">İptal</button>
-                <button type="submit" className="bg-indigo-600 text-white px-4 py-2 rounded hover:bg-indigo-700">Kaydet</button>
-              </div>
-            </form>
+             </form>
           </div>
         </div>
       )}

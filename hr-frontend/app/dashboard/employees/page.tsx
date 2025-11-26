@@ -1,19 +1,12 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import axios from "axios";
 import { useRouter } from "next/navigation";
 
-interface Employee {
-  id: number;
-  firstName: string;
-  lastName: string;
-  email: string;
-  department: string;
-  jobTitle: string;
-  phoneNumber: string;
-  hireDate: string;
-}
+import { employeeService } from "../../../services/employeeService";
+import { Employee } from "../../../types";
+
+
 
 export default function EmployeesPage() {
   const router = useRouter();
@@ -48,17 +41,16 @@ export default function EmployeesPage() {
 
     setToken(t);
     setRole(r || "");
-    fetchEmployees(t);
+    loadEmployees()
   }, [router]);
 
-  const fetchEmployees = async (t: string) => {
+  const loadEmployees = async () => {
     try {
-      const response = await axios.get("http://localhost:8080/api/employees", {
-        headers: { Authorization: `Bearer ${t}` },
-      });
-      setEmployees(response.data);
+      // Token parametresine gerek yok, servis hallediyor
+      const data = await employeeService.getAll();
+      setEmployees(data);
     } catch (error) {
-      console.error(error);
+      console.error("Veri çekme hatası:", error);
     } finally {
       setLoading(false);
     }
@@ -67,9 +59,7 @@ export default function EmployeesPage() {
   const handleCreate = async (e: React.FormEvent) => {
     e.preventDefault();
     try {
-      await axios.post("http://localhost:8080/api/employees", formData, {
-        headers: { Authorization: `Bearer ${token}` },
-      });
+      await employeeService.create(formData);
 
       alert("Personel başarıyla eklendi!");
       setShowModal(false);
@@ -78,7 +68,7 @@ export default function EmployeesPage() {
         firstName: "", lastName: "", email: "", department: "IT", jobTitle: "", position: "", phoneNumber: "", hireDate: ""
       });
       // Listeyi yenile
-      fetchEmployees(token);
+      loadEmployees()
     } catch (error) {
       console.error(error);
       alert("Ekleme işlemi başarısız!");
