@@ -13,7 +13,7 @@ spring:
           # Eğer EMPLOYEE_URI tanımlıysa onu kullan, yoksa localhost:8081 kullan
           uri: ${EMPLOYEE_URI:http://localhost:8081}
           predicates:
-            - Path=/api/employees/**, /api/teams/**
+            - Path=/api/employees/**, /api/teams/**, /api/positions/**, /api/departments/**, /api/job-titles/**
           filters:
             - AuthenticationFilter
 
