@@ -83,7 +83,6 @@ export default function PositionsPage() {
       <div className="flex justify-between items-center mb-6">
         <h1 className="text-2xl font-bold text-gray-800">Pozisyon Tanımları</h1>
         <div className="flex gap-2">
-            <button onClick={() => router.push("/dashboard")} className="text-gray-600 px-4">← Geri</button>
             <button onClick={() => openModal()} className="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700">+ Yeni Pozisyon</button>
         </div>
       </div>

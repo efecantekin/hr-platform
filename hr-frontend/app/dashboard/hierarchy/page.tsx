@@ -118,7 +118,6 @@ export default function HierarchyPage() {
     <div className="min-h-screen bg-gray-50 p-8">
       <div className="flex justify-between items-center mb-6">
         <h1 className="text-2xl font-bold text-gray-800">Hiyerarşi Yönetimi</h1>
-        <button onClick={() => router.push("/dashboard")} className="text-gray-600 hover:text-gray-900">← Geri</button>
       </div>
 
       <div className="bg-white shadow rounded-lg overflow-hidden">

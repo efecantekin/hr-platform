@@ -114,7 +114,6 @@ export default function EmployeesPage() {
       <div className="flex justify-between items-center mb-6">
         <h1 className="text-2xl font-bold text-gray-800">Personel Yönetimi</h1>
         <div className="space-x-4">
-             <button onClick={() => router.push("/dashboard")} className="text-gray-600 hover:text-gray-900">← Geri</button>
              <button 
                 onClick={() => setShowModal(true)} 
                 className="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700 shadow"
