@@ -1,58 +1,58 @@
 package com.hr.employee.controller;
 
+import com.hr.employee.dto.HierarchyAssignmentRequest;
 import com.hr.employee.entity.Employee;
-import com.hr.employee.repository.EmployeeRepository;
+import com.hr.employee.service.EmployeeService;
+
+import lombok.RequiredArgsConstructor;
+
 import org.springframework.web.bind.annotation.*;
+
 import java.util.List;
 
 @RestController
 @RequestMapping("/api/employees")
+@RequiredArgsConstructor
 public class EmployeeController {
 
-    private final EmployeeRepository employeeRepository;
+    private final EmployeeService employeeService;
 
-    // Bağımlılığı enjekte ediyoruz (Constructor Injection)
-    public EmployeeController(EmployeeRepository employeeRepository) {
-        this.employeeRepository = employeeRepository;
-    }
-
-    // Tüm çalışanları getir
+    // 1. Tüm Çalışanları Getir
     @GetMapping
     public List<Employee> getAllEmployees() {
-        return employeeRepository.findAll();
+        // Repository yerine Service kullanıyoruz
+        return employeeService.getAllEmployees();
     }
 
-    // Yeni çalışan ekle
+    // 2. Yeni Çalışan Ekle
     @PostMapping
     public Employee createEmployee(@RequestBody Employee employee) {
-        return employeeRepository.save(employee);
+        // Service kullanıyoruz ki "Otomatik Kullanıcı Oluşturma" mantığı çalışsın
+        return employeeService.createEmployee(employee);
     }
 
-    // Yöneticiye bağlı ekibi getir
+    // 3. Yöneticiye Bağlı Ekibi Getir
     @GetMapping("/manager/{managerId}")
     public List<Employee> getMyTeam(@PathVariable Long managerId) {
-        return employeeRepository.findByManagerId(managerId);
+        // Service'deki ilgili metodu çağırıyoruz
+        return employeeService.getTeamMembers(managerId);
     }
 
-    @PutMapping("/{employeeId}/assign-manager/{managerId}")
-    public Employee assignManager(@PathVariable Long employeeId, @PathVariable Long managerId) {
-        Employee employee = employeeRepository.findById(employeeId)
-                .orElseThrow(() -> new RuntimeException("Çalışan bulunamadı"));
-
-        // Döngüsel referans kontrolü (Ahmet'i Mehmet'e, Mehmet'i Ahmet'e bağlayamazsın)
-        if (employeeId.equals(managerId)) {
-            throw new RuntimeException("Kişi kendi kendisinin yöneticisi olamaz!");
-        }
-
-        employee.setManagerId(managerId);
-        return employeeRepository.save(employee);
+    // 4. Hiyerarşi ve Yönetici Atama (Yeni Eklediğimiz)
+    @PostMapping("/assign-hierarchy")
+    public Employee assignHierarchy(@RequestBody HierarchyAssignmentRequest request) {
+        return employeeService.assignHierarchy(request);
     }
-
-    // 2. YÖNETİCİSİ OLMAYANLARI GETİR (Root Nodes / CEO / Tepe Yönetim)
-    // Ağacı en tepeden çizmeye başlamak için lazım olacak.
+    
+    // 5. Kök Kullanıcıları Getir (Org. Şeması için)
     @GetMapping("/roots")
     public List<Employee> getRootEmployees() {
-        // managerId'si null olanları getirir (Repository'e bu metodu eklememiz lazım)
-        return employeeRepository.findByManagerIdIsNull();
+        return employeeService.getRootEmployees();
+    }
+    
+    // 6. ID ile Getir (Opsiyonel ama yararlı)
+    @GetMapping("/{id}")
+    public Employee getEmployeeById(@PathVariable Long id) {
+        return employeeService.getEmployeeById(id);
     }
 }

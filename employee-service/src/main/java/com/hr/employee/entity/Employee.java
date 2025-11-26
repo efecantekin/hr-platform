@@ -37,4 +37,6 @@ public class Employee {
     private boolean isActive = true;
 
     private Long teamId;
+
+    private String position;
 }
