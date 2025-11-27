@@ -21,28 +21,22 @@ public class DocumentService {
         return repository.findByEmployeeId(employeeId);
     }
 
-    // 1. Üzerine Alınmamış (Boştaki) Talepleri Getir
     public List<DocumentRequest> getUnassignedRequests() {
-        // Statusu REQUESTED olanlar ve assignedHrId'si null olanlar
-        // (Bunun için Repository'e findByStatusAndAssignedHrIdIsNull gibi bir metod yazılabilir
-        // ama şimdilik tümünü çekip filtreleyelim veya basit tutalım)
         return repository.findAll().stream()
                 .filter(doc -> doc.getAssignedHrId() == null)
                 .toList();
     }
 
-    // 2. İşi Üzerine Al (Claim)
     public DocumentRequest claimRequest(Long docId, Long hrId) {
         DocumentRequest doc = repository.findById(docId).orElseThrow();
         doc.setAssignedHrId(hrId);
-        doc.setStatus("IN_PROGRESS"); // Durumu "İşleniyor" yap
+        doc.setStatus("IN_PROGRESS"); 
         return repository.save(doc);
     }
-
-    // 3. İşi Tamamla (Complete)
+    
     public DocumentRequest completeRequest(Long docId) {
         DocumentRequest doc = repository.findById(docId).orElseThrow();
-        doc.setStatus("DELIVERED"); // Durumu "Teslim Edildi" yap
+        doc.setStatus("DELIVERED"); 
         return repository.save(doc);
     }
 }

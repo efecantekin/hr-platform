@@ -1,4 +1,4 @@
-package com.hr.auth.config; // <--- PAKET İSMİNE DİKKAT
+package com.hr.auth.config; 
 
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -16,9 +16,9 @@ public class AuthConfig {
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
         http
-            .csrf(AbstractHttpConfigurer::disable) // 1. CSRF KAPALI (Şart!)
+            .csrf(AbstractHttpConfigurer::disable) 
             .authorizeHttpRequests(auth -> auth
-                .requestMatchers("/auth/**").permitAll() // 2. BU ADRESLER SERBEST
+                .requestMatchers("/auth/**").permitAll() 
                 .anyRequest().authenticated()
             );
         return http.build();

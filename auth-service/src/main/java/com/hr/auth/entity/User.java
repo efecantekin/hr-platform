@@ -4,7 +4,7 @@ import jakarta.persistence.*;
 import lombok.Data;
 
 @Entity
-@Table(name = "users") // PostgreSQL'de 'user' yasaklı kelime olabilir, 'users' yapalım
+@Table(name = "users") 
 @Data
 public class User {
 
@@ -16,10 +16,10 @@ public class User {
     private String username;
 
     @Column(nullable = false)
-    private String password; // Şifrelenmiş halde tutacağız
+    private String password; 
 
-    private String role; // ADMIN, USER, MANAGER vs.
+    private String role; 
     
-    // Hangi çalışana bağlı olduğu (Employee Service ile eşleşmek için)
+    
     private Long employeeId; 
 }

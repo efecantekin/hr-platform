@@ -1,4 +1,3 @@
-// lib/axios.ts
 import axios from 'axios';
 
 const api = axios.create({
@@ -8,7 +7,6 @@ const api = axios.create({
   },
 });
 
-// Otomatik Token Ekleme
 api.interceptors.request.use(
   (config) => {
     if (typeof window !== 'undefined') {

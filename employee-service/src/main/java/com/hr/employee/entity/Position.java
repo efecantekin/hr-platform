@@ -12,5 +12,5 @@ public class Position {
     private Long id;
 
     @Column(nullable = false, unique = true)
-    private String title; // Örn: "Yazılım Müdürü", "İK Uzmanı"
+    private String title; 
 }

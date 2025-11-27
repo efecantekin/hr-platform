@@ -14,20 +14,16 @@ public class DocumentRequest {
     private Long id;
 
     @Column(nullable = false)
-    private Long employeeId; // Talep eden kişi
-
-    // Belge Türü (Çalışma Belgesi, Vize Yazısı, Bordro vb.)
+    private Long employeeId; 
+    
     @Column(nullable = false)
     private String documentType;
 
-    // Ekstra Açıklama veya Kurum Adı (Örn: "Konsolosluğa verilmek üzere")
     private String description;
-
-    // Durum: REQUESTED, PREPARED, DELIVERED
+    
     private String status = "REQUESTED";
 
     private LocalDate requestedAt = LocalDate.now();
-
-    // İşi üzerine alan İK personelinin ID'si
+    
     private Long assignedHrId;
 }

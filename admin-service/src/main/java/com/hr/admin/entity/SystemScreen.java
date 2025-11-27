@@ -12,8 +12,8 @@ public class SystemScreen {
     private Long id;
 
     @Column(nullable = false)
-    private String name; // Örn: "Personel Listesi"
+    private String name; 
 
     @Column(nullable = false)
-    private String url;  // Örn: "/dashboard/employees"
+    private String url;  
 }

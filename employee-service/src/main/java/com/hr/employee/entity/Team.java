@@ -12,7 +12,7 @@ public class Team {
     private Long id;
 
     @Column(nullable = false, unique = true)
-    private String name; // Örn: "Backend Geliştirme Ekibi"
+    private String name; 
 
-    private Long managerId; // Bu ekibin yöneticisi kim? (Employee ID)
+    private Long managerId; 
 }
