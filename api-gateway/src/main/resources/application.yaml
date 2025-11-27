@@ -38,6 +38,15 @@ spring:
             - Path=/api/documents/**
           filters:
             - AuthenticationFilter
+          
+          # 5. Admin Service (YENİ)
+        - id: admin-service
+          uri: ${ADMIN_URI:http://localhost:8085}
+          predicates:
+            # Menü istekleri artık buraya
+            - Path=/api/menus/**, /api/admin/**, /api/screens/**
+          filters:
+            - AuthenticationFilter
 
 # Actuator ayarları (ayrı bir blok olmalı)
 management:
