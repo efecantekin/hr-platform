@@ -1,5 +1,3 @@
-// types/index.ts
-
 export interface Employee {
   id: number;
   firstName: string;

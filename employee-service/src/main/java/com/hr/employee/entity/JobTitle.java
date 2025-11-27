@@ -12,5 +12,5 @@ public class JobTitle {
     private Long id;
 
     @Column(nullable = false, unique = true)
-    private String title; // Örn: "Senior Developer", "Analist"
+    private String title; 
 }

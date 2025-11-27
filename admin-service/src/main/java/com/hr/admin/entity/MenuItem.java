@@ -14,20 +14,19 @@ public class MenuItem {
     private Long id;
 
     @Column(nullable = false)
-    private String title; // Menüde görünecek yazı
+    private String title; 
 
-    private String url;   // Tıklanınca gideceği yol (Boşsa sadece başlık olur)
+    private String url;   
     
-    private String icon;  // İkon adı (Opsiyonel)
+    private String icon;  
 
-    private int sortOrder; // Sıralama indeksi
+    private int sortOrder; 
 
-    // Hiyerarşi için Parent-Child ilişkisi
+    
     @ManyToOne
     @JoinColumn(name = "parent_id")
     private MenuItem parent;
 
-    // Alt menüleri çekmek için (Eager fetch yerine serviste tree kurmak daha performanslıdır ama basitlik için böyle yapalım)
     @OneToMany(mappedBy = "parent", cascade = CascadeType.ALL)
     @OrderBy("sortOrder ASC")
     private List<MenuItem> children = new ArrayList<>();

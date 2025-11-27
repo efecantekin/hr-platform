@@ -16,19 +16,16 @@ public class ApiGatewayApplication {
 		SpringApplication.run(ApiGatewayApplication.class, args);
 	}
 
-    // CORS AYARLARI (Frontend'in Backend ile konuşması için şart)
 	@Bean
 	public CorsWebFilter corsWebFilter() {
 		CorsConfiguration corsConfig = new CorsConfiguration();
-		// 1. Hangi adresten gelen isteklere izin verilsin? (Next.js adresi)
 		corsConfig.setAllowedOrigins(Arrays.asList("http://localhost:3000"));
-		// 2. Hangi metodlara izin verilsin?
-		corsConfig.setMaxAge(3600L); // Önbellek süresi
-		corsConfig.addAllowedMethod("*"); // GET, POST, PUT, DELETE vb. hepsi
-		corsConfig.addAllowedHeader("*"); // Authorization vb. tüm başlıklar
+		corsConfig.setMaxAge(3600L); 
+		corsConfig.addAllowedMethod("*"); 
+		corsConfig.addAllowedHeader("*"); 
 
 		UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
-		source.registerCorsConfiguration("/**", corsConfig); // Tüm rotalar için geçerli
+		source.registerCorsConfiguration("/**", corsConfig); 
 		return new CorsWebFilter(source);
 	}
 }

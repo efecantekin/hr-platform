@@ -18,14 +18,13 @@ public class MenuController {
 
     private final MenuItemRepository repository;
 
-    // Ağaç Yapısını Getir
+    
     @GetMapping
     public List<MenuItemDTO> getMenuTree() {
         List<MenuItem> roots = repository.findByParentIsNullOrderBySortOrderAsc();
         return roots.stream().map(this::convertToDTO).collect(Collectors.toList());
     }
 
-    // Yeni Menü Ekle
     @PostMapping
     public MenuItem create(@RequestBody MenuItemDTO dto) {
         MenuItem item = new MenuItem();
@@ -41,7 +40,6 @@ public class MenuController {
         return repository.save(item);
     }
 
-    // Menüyü Güncelle (Sıralama veya İçerik)
     @PutMapping("/{id}")
     public MenuItem update(@PathVariable Long id, @RequestBody MenuItemDTO dto) {
         MenuItem item = repository.findById(id).orElseThrow();
@@ -49,17 +47,14 @@ public class MenuController {
         item.setUrl(dto.getUrl());
         item.setSortOrder(dto.getSortOrder());
         item.setRoles(dto.getRoles());
-        // Parent değişimi vb. buraya eklenebilir
         return repository.save(item);
     }
 
-    // Sil
     @DeleteMapping("/{id}")
     public void delete(@PathVariable Long id) {
         repository.deleteById(id);
     }
 
-    // Helper: Entity -> DTO (Recursive)
     private MenuItemDTO convertToDTO(MenuItem item) {
         MenuItemDTO dto = new MenuItemDTO();
         dto.setId(item.getId());
@@ -78,7 +73,7 @@ public class MenuController {
     }
 
     @PutMapping("/update-order")
-    @Transactional // Çoklu işlem olduğu için Transactional şart
+    @Transactional 
     public void updateOrder(@RequestBody List<MenuItemDTO> items) {
         for (MenuItemDTO dto : items) {
             MenuItem item = repository.findById(dto.getId()).orElse(null);

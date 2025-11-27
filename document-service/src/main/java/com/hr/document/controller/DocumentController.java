@@ -24,19 +24,16 @@ public class DocumentController {
         return service.getMyDocuments(employeeId);
     }
 
-    // Boştaki İşleri Listele (HR Havuzu)
     @GetMapping("/pool")
     public List<DocumentRequest> getDocumentPool() {
         return service.getUnassignedRequests();
     }
-
-    // İşi Üzerine Al
+    
     @PutMapping("/{id}/claim")
     public DocumentRequest claimTask(@PathVariable Long id, @RequestParam Long hrId) {
         return service.claimRequest(id, hrId);
     }
-
-    // İşi Tamamla
+    
     @PutMapping("/{id}/complete")
     public DocumentRequest completeTask(@PathVariable Long id) {
         return service.completeRequest(id);

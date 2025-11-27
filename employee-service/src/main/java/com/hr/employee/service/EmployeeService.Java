@@ -16,23 +16,17 @@ public class EmployeeService {
     private final EmployeeRepository repository;
     private final AuthClient authClient;
 
-    // Constructor Injection
+    
     public EmployeeService(EmployeeRepository repository, AuthClient authClient) {
         this.repository = repository;
         this.authClient = authClient;
     }
 
-    // 1. Yeni Personel Ekle (Ve Otomatik Kullanıcı Hesabı Aç)
     @Transactional
-    public Employee createEmployee(Employee employee) {
-        // Önce personeli kaydet
+    public Employee createEmployee(Employee employee) {        
         Employee savedEmployee = repository.save(employee);
 
-        // Sonra Auth Service'e git ve kullanıcı aç
         try {
-            // Username: Email adresi
-            // Password: "123456" (Varsayılan)
-            // Role: "USER"
             RegisterRequest registerRequest = new RegisterRequest(
                 savedEmployee.getEmail(),
                 "123456", 
@@ -43,31 +37,24 @@ public class EmployeeService {
             authClient.registerUser(registerRequest);
             System.out.println("✅ Otomatik kullanıcı hesabı oluşturuldu: " + savedEmployee.getEmail());
 
-        } catch (Exception e) {
-            // Auth servisi kapalı olsa bile personel kaydı boşa gitmesin diye hatayı yutuyoruz (Logluyoruz)
+        } catch (Exception e) {           
             System.err.println("⚠️ Kullanıcı hesabı oluşturulamadı: " + e.getMessage());
         }
 
         return savedEmployee;
     }
 
-    // 2. Tüm Çalışanları Getir
     public List<Employee> getAllEmployees() {
         return repository.findAll();
     }
-
-    // 3. ID ile Getir
+  
     public Employee getEmployeeById(Long id) {
         return repository.findById(id).orElseThrow(() -> new RuntimeException("Çalışan bulunamadı"));
     }
-
-    // 4. Yönetici Ata (Hiyerarşi için)
+    
     @Transactional
-    public Employee assignHierarchy(HierarchyAssignmentRequest request) {
+    public Employee assignHierarchy(HierarchyAssignmentRequest request) {       
         
-        // ... Yeni pozisyon ve atama mantığı burada ...
-        
-        // 1. Yöneticinin Pozisyonunu Güncelle
         if (request.getManagerPosition() != null && !request.getManagerPosition().trim().isEmpty()) {
             Employee manager = repository.findById(request.getManagerId())
                                         .orElseThrow(() -> new RuntimeException("Yönetici bulunamadı."));
@@ -75,12 +62,10 @@ public class EmployeeService {
             manager.setPosition(request.getManagerPosition());
             repository.save(manager);
         }
-        
-        // 2. Ast'ı Yöneticiye Bağla
+               
         Employee subordinate = repository.findById(request.getSubordinateId())
                                         .orElseThrow(() -> new RuntimeException("Çalışan bulunamadı."));
-        
-        // Atama kontrolü
+               
         if (request.getSubordinateId().equals(request.getManagerId())) {
             throw new RuntimeException("Kişi kendi kendini atayamaz.");
         }
@@ -88,13 +73,11 @@ public class EmployeeService {
         subordinate.setManagerId(request.getManagerId());
         return repository.save(subordinate);
     }
-
-    // 5. Yöneticisi Olmayanları Getir (Org. Şeması kökleri için)
+    
     public List<Employee> getRootEmployees() {
         return repository.findByManagerIdIsNull();
     }
-
-    // 6. Bir Yöneticiye Bağlı Kişileri Getir (Ekibim)
+ 
     public List<Employee> getTeamMembers(Long managerId) {
         return repository.findByManagerId(managerId);
     }

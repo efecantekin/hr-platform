@@ -6,7 +6,7 @@ import java.time.LocalDate;
 
 @Entity
 @Table(name = "employees")
-@Data // Lombok: Getter/Setter metodlarını bizim yerimize yazar
+@Data 
 public class Employee {
 
     @Id

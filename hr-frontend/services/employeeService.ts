@@ -1,6 +1,5 @@
-// services/employeeService.ts
-import api from '../lib/axios'; // lib klasörüne geri çık
-import { Employee, HierarchyAssignmentRequest } from '../types'; // types klasörüne geri çık
+import api from '../lib/axios'; 
+import { Employee, HierarchyAssignmentRequest } from '../types'; 
 
 export const employeeService = {
   getAll: async () => {
