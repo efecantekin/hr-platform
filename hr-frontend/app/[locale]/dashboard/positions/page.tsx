@@ -1,12 +1,13 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { positionService, Position } from "../../../../services/positionService";
+import { positionService } from "../../../../services/positionService";
 import Button from "../../../../components/ui/Button";
 import Input from "../../../../components/ui/Input";
 import Card from "../../../../components/ui/Card";
 import Modal from "../../../../components/ui/Modal";
 import DataTable, { Column } from "@/components/ui/Table";
+import { Position } from "../../../../types";
 
 export default function PositionsView() {
   const [list, setList] = useState<Position[]>([]);

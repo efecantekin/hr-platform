@@ -3,8 +3,8 @@
 import { useEffect, useState } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { menuService } from "../services/menuService";
-import { MenuItem } from "../types";
+import { menuService } from "../../services/menuService";
+import { MenuItem } from "../../types";
 
 export default function Sidebar() {
   const [menuItems, setMenuItems] = useState<MenuItem[]>([]);

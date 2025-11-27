@@ -1,9 +1,5 @@
+import { Position } from "../types";
 import api from "../lib/axios";
-
-export interface Position {
-  id: number;
-  title: string;
-}
 
 export const positionService = {
   getAll: async () => {

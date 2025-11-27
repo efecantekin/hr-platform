@@ -3,7 +3,7 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { useTranslations } from "next-intl";
-import LanguageSwitcher from "../../components/LanguageSwitcher";
+import LanguageSwitcher from "../../components/ui/LanguageSwitcher";
 import { authService } from "../../services/authService"; // Servis importu
 
 export default function LoginPage() {

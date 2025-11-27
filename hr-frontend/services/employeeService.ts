@@ -16,4 +16,9 @@ export const employeeService = {
     const response = await api.post<Employee>("/employees/assign-hierarchy", data);
     return response.data;
   },
+
+  getMyTeam: async (managerId: number) => {
+    const response = await api.get<Employee[]>(`/employees/manager/${managerId}`);
+    return response.data;
+  },
 };
