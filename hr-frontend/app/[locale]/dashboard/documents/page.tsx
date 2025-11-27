@@ -1,59 +1,60 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import axios from "axios";
-import { useRouter } from "next/navigation";
-import { DocumentRequest } from "../../../../types";
 import { documentService } from "../../../../services/documentService";
+import { DocumentRequest } from "../../../../types";
+import Button from "../../../../components/ui/Button";
+import Input from "../../../../components/ui/Input";
+import Select from "../../../../components/ui/Select";
+import Modal from "../../../../components/ui/Modal";
+import Badge from "../../../../components/ui/Badge";
+import DataTable, { Column } from "../../../../components/ui/Table";
 
-export default function DocumentsPage() {
-  const router = useRouter();
-  const [activeTab, setActiveTab] = useState("MY_DOCS"); // MY_DOCS veya HR_PANEL
+export default function DocumentsView() {
+  // Tipi string olarak zorluyoruz
+  const [activeTab, setActiveTab] = useState<string>("MY_DOCS");
   const [role, setRole] = useState("USER");
   const [currentUserId, setCurrentUserId] = useState<number>(0);
-  const [token, setToken] = useState("");
 
-  // Veriler
   const [myDocuments, setMyDocuments] = useState<DocumentRequest[]>([]);
-  const [poolDocuments, setPoolDocuments] = useState<DocumentRequest[]>([]); // Sahipsiz işler
+  const [poolDocuments, setPoolDocuments] = useState<DocumentRequest[]>([]);
 
-  // Form Verileri
   const [showModal, setShowModal] = useState(false);
   const [formData, setFormData] = useState({ documentType: "CALISMA_BELGESI", description: "" });
 
+  const DOC_TYPES = [
+    { value: "CALISMA_BELGESI", label: "Çalışma Belgesi" },
+    { value: "VIZE_YAZISI", label: "Vize Yazısı" },
+    { value: "BORDRO", label: "Maaş Bordrosu" },
+  ];
+
   useEffect(() => {
-    const token = localStorage.getItem("token");
-    const userRole = localStorage.getItem("role");
+    const role = localStorage.getItem("role");
     const empId = localStorage.getItem("employeeId");
-
-    if (!token) {
-      router.push("/");
-      return;
+    if (role) setRole(role);
+    if (empId) {
+      const id = Number(empId);
+      setCurrentUserId(id);
+      fetchMyDocuments(id);
     }
-    
-    if(userRole) setRole(userRole);
-    
-    if(empId) {
-        const id = Number(empId);
-        setCurrentUserId(id);
-        fetchMyDocuments(id);
-    }
-  }, [router]);
+  }, []);
 
-  // --- API ÇAĞRILARI ---
-
-  const fetchMyDocuments = async (empId: number) => {
+  const fetchMyDocuments = async (id: number) => {
     try {
-      const data = await documentService.getByEmployee(empId);
+      const data = await documentService.getByEmployee(id);
       setMyDocuments(data);
-    } catch (err) { console.error(err); }
+    } catch (err) {
+      console.error(err);
+    }
   };
 
   const fetchDocumentPool = async () => {
     try {
       const data = await documentService.getPool();
       setPoolDocuments(data);
-    } catch (err) { console.error(err); }
+    } catch (err) {
+      console.error(err);
+    }
   };
 
   const handleCreate = async (e: React.FormEvent) => {
@@ -61,9 +62,11 @@ export default function DocumentsPage() {
     try {
       await documentService.create({ employeeId: currentUserId, ...formData } as any);
       alert("Talep iletildi!");
-      // ... modal kapat ...
+      setShowModal(false);
       fetchMyDocuments(currentUserId);
-    } catch (err) { alert("Hata oluştu"); }
+    } catch (err) {
+      alert("Hata oluştu");
+    }
   };
 
   const handleClaim = async (docId: number) => {
@@ -71,127 +74,101 @@ export default function DocumentsPage() {
       await documentService.claim(docId, currentUserId);
       alert("İş üzerinize alındı!");
       fetchDocumentPool();
-    } catch (err) { alert("İşlem başarısız"); }
+    } catch (err) {
+      alert("İşlem başarısız");
+    }
   };
 
-  // 5. İK: İşi Tamamla (Complete)
-  // Not: Bu fonksiyonu havuzda göstermiyoruz çünkü havuzda sadece sahipsizler var.
-  // Gerçek senaryoda "Üzerimdeki İşler" tablosunda bu butonu gösteririz.
-  // Demo için Claim butonuna basınca otomatik tamamlanmış gibi yapalım veya konsola yazalım.
+  // --- KOLONLAR (Bileşenin İÇİNDE olmalı) ---
+  const columns: Column<DocumentRequest>[] = [
+    {
+      header: "Belge Türü",
+      accessorKey: "documentType",
+      className: "font-medium",
+    },
+    {
+      header: "Açıklama",
+      accessorKey: "description",
+      className: "text-gray-600",
+    },
+    {
+      header: "Durum",
+      cell: (doc) => (
+        <Badge variant={doc.status === "DELIVERED" ? "success" : "neutral"}>{doc.status}</Badge>
+      ),
+    },
+    {
+      header: "İşlem",
+      className: "text-right",
+      // BURADA 'as any' KULLANARAK TYPESCRIPT'İ SUSTURUYORUZ
+      cell: (doc) =>
+        (activeTab as any) === "HR_PANEL" ? (
+          <div className="flex justify-end">
+            <Button size="sm" variant="success" onClick={() => handleClaim(doc.id)}>
+              ⚡ İşi Al
+            </Button>
+          </div>
+        ) : null,
+    },
+  ];
 
   return (
     <div className="min-h-screen bg-gray-50 p-8">
       <div className="flex justify-between items-center mb-6">
         <h1 className="text-2xl font-bold text-gray-800">Belge Talep Yönetimi</h1>
-      </div>
-
-      {/* SEKMELER */}
-      <div className="flex border-b mb-6">
-        <button
-          className={`px-6 py-3 font-medium ${activeTab === "MY_DOCS" ? "border-b-2 border-purple-600 text-purple-600" : "text-gray-500"}`}
-          onClick={() => setActiveTab("MY_DOCS")}
-        >
-          📄 Belgelerim
-        </button>
-        {(role === "ADMIN" || role === "HR") && (
-          <button
-            className={`px-6 py-3 font-medium ${activeTab === "HR_PANEL" ? "border-b-2 border-orange-500 text-orange-600" : "text-gray-500"}`}
-            onClick={() => {
-              setActiveTab("HR_PANEL");
-              fetchDocumentPool();
-            }}
+        <div className="flex gap-2">
+          <Button
+            variant={activeTab === "MY_DOCS" ? "primary" : "outline"}
+            onClick={() => setActiveTab("MY_DOCS")}
           >
-            📂 İK İş Havuzu
-          </button>
-        )}
-      </div>
-
-      {/* 1. SEKME: BELGELERİM */}
-      {activeTab === "MY_DOCS" && (
-        <div>
-          <div className="flex justify-end mb-4">
-            <button onClick={() => setShowModal(true)} className="bg-purple-600 text-white px-4 py-2 rounded hover:bg-purple-700 shadow">
-              + Belge Talep Et
-            </button>
-          </div>
-          <DocumentTable docs={myDocuments} showActions={false} />
-        </div>
-      )}
-
-      {/* 2. SEKME: İK PANELİ (HAVUZ) */}
-      {activeTab === "HR_PANEL" && (
-        <div className="bg-white shadow rounded-lg p-6">
-          <h3 className="font-bold text-lg mb-4 text-gray-700">Bekleyen Talepler Havuzu</h3>
-          <p className="text-sm text-gray-500 mb-4">Bu listede henüz bir İK uzmanı tarafından atanmamış işler listelenir.</p>
-
-          {poolDocuments.length === 0 ? <p className="text-gray-400">Havuzda bekleyen iş yok.</p> : (
-            <table className="min-w-full">
-              <thead className="bg-gray-100 text-left text-xs uppercase text-gray-600">
-                <tr>
-                  <th className="p-3">Personel ID</th>
-                  <th className="p-3">Belge Türü</th>
-                  <th className="p-3">Açıklama</th>
-                  <th className="p-3">İşlem</th>
-                </tr>
-              </thead>
-              <tbody>
-                {poolDocuments.map(doc => (
-                  <tr key={doc.id} className="border-b">
-                    <td className="p-3 font-bold">#{doc.employeeId}</td>
-                    <td className="p-3">{doc.documentType}</td>
-                    <td className="p-3 text-gray-600">{doc.description}</td>
-                    <td className="p-3">
-                      <button
-                        onClick={() => handleClaim(doc.id)}
-                        className="bg-orange-500 text-white px-3 py-1 rounded text-sm hover:bg-orange-600"
-                      >
-                        ⚡ İşi Üzerine Al
-                      </button>
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
+            Belgelerim
+          </Button>
+          {(role === "ADMIN" || role === "HR") && (
+            <Button
+              variant={activeTab === "HR_PANEL" ? "primary" : "outline"}
+              onClick={() => {
+                setActiveTab("HR_PANEL");
+                fetchDocumentPool();
+              }}
+            >
+              İK Havuzu
+            </Button>
           )}
         </div>
-      )}
+      </div>
 
-      {/* MODAL FORM */}
-      {showModal && (
-        <div className="fixed inset-0 bg-gray-600 bg-opacity-50 flex items-center justify-center">
-          <div className="bg-white p-8 rounded shadow w-96">
-            <h2 className="font-bold text-xl mb-4">Talep Oluştur</h2>
-            <form onSubmit={handleCreate}>
-              <div className="mb-2"><label className="block text-sm">Tür</label><select className="w-full border p-2" value={formData.documentType} onChange={e => setFormData({ ...formData, documentType: e.target.value })}><option value="CALISMA_BELGESI">Çalışma Belgesi</option><option value="VIZE">Vize Yazısı</option></select></div>
-              <div className="mb-4"><label className="block text-sm">Açıklama</label><textarea className="w-full border p-2" value={formData.description} onChange={e => setFormData({ ...formData, description: e.target.value })} /></div>
-              <div className="flex justify-end gap-2"><button type="button" onClick={() => setShowModal(false)} className="bg-gray-300 px-3 py-1 rounded">İptal</button><button type="submit" className="bg-purple-600 text-white px-3 py-1 rounded">Gönder</button></div>
-            </form>
+      <div className="bg-white p-4 shadow rounded-lg border border-gray-100">
+        {activeTab === "MY_DOCS" && (
+          <div className="flex justify-end mb-4">
+            <Button onClick={() => setShowModal(true)}>+ Yeni Talep</Button>
           </div>
-        </div>
-      )}
+        )}
+
+        <DataTable
+          data={activeTab === "MY_DOCS" ? myDocuments : poolDocuments}
+          columns={columns}
+          emptyMessage={activeTab === "MY_DOCS" ? "Talep bulunamadı." : "Havuzda bekleyen iş yok."}
+        />
+      </div>
+
+      <Modal
+        isOpen={showModal}
+        onClose={() => setShowModal(false)}
+        title="Talep Oluştur"
+        footer={<Button onClick={handleCreate}>Gönder</Button>}
+      >
+        <Select
+          label="Tür"
+          options={DOC_TYPES}
+          value={formData.documentType}
+          onChange={(e) => setFormData({ ...formData, documentType: e.target.value })}
+        />
+        <Input
+          label="Açıklama"
+          value={formData.description}
+          onChange={(e) => setFormData({ ...formData, description: e.target.value })}
+        />
+      </Modal>
     </div>
   );
-}
-
-// Yardımcı Tablo
-function DocumentTable({ docs, showActions }: { docs: DocumentRequest[], showActions: boolean }) {
-  if (docs.length === 0) return <p className="text-gray-500">Kayıt yok.</p>;
-  return (
-    <div className="bg-white shadow rounded overflow-hidden">
-      <table className="min-w-full">
-        <thead className="bg-gray-100 text-left text-xs uppercase text-gray-600">
-          <tr><th className="p-3">Tür</th><th className="p-3">Açıklama</th><th className="p-3">Durum</th></tr>
-        </thead>
-        <tbody>
-          {docs.map(d => (
-            <tr key={d.id} className="border-b">
-              <td className="p-3 font-medium">{d.documentType}</td>
-              <td className="p-3 text-gray-600">{d.description}</td>
-              <td className="p-3"><span className="bg-blue-100 text-blue-800 px-2 py-1 rounded text-xs">{d.status}</span></td>
-            </tr>
-          ))}
-        </tbody>
-      </table>
-    </div>
-  )
 }

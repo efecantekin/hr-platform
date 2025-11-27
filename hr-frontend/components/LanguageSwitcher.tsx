@@ -12,11 +12,11 @@ export default function LanguageSwitcher() {
   const switchLanguage = (newLocale: string) => {
     // 1. Mevcut yoldan dil bilgisini çıkar (Örn: /tr/dashboard -> /dashboard)
     const pathWithoutLocale = pathname.replace(/^\/(tr|en)/, "");
-    
+
     // 2. Yeni dili başa ekle ve yönlendir (Örn: /en + /dashboard)
     // Eğer path boşsa (root) sadece /en veya /tr olur
-    const newPath = `/${newLocale}${pathWithoutLocale || ''}`;
-    
+    const newPath = `/${newLocale}${pathWithoutLocale || ""}`;
+
     router.push(newPath);
   };
 

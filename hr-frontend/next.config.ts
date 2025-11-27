@@ -1,5 +1,5 @@
 import type { NextConfig } from "next";
-import createNextIntlPlugin from 'next-intl/plugin';
+import createNextIntlPlugin from "next-intl/plugin";
 
 // Eklentiyi başlat
 const withNextIntl = createNextIntlPlugin();

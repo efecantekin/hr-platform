@@ -1,9 +1,9 @@
-import api from '../lib/axios';
-import { LeaveRequest } from '../types';
+import api from "../lib/axios";
+import { LeaveRequest } from "../types";
 
 export const leaveService = {
   create: async (data: Partial<LeaveRequest>) => {
-    const response = await api.post<LeaveRequest>('/leaves', data);
+    const response = await api.post<LeaveRequest>("/leaves", data);
     return response.data;
   },
 
@@ -13,12 +13,12 @@ export const leaveService = {
   },
 
   getPending: async () => {
-    const response = await api.get<LeaveRequest[]>('/leaves/pending');
+    const response = await api.get<LeaveRequest[]>("/leaves/pending");
     return response.data;
   },
 
-  updateStatus: async (id: number, status: 'APPROVED' | 'REJECTED') => {
+  updateStatus: async (id: number, status: "APPROVED" | "REJECTED") => {
     const response = await api.put<LeaveRequest>(`/leaves/${id}/status?status=${status}`);
     return response.data;
-  }
+  },
 };

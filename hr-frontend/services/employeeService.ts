@@ -1,20 +1,19 @@
-import api from '../lib/axios'; 
-import { Employee, HierarchyAssignmentRequest } from '../types'; 
+import api from "../lib/axios";
+import { Employee, HierarchyAssignmentRequest } from "../types";
 
 export const employeeService = {
   getAll: async () => {
-    const response = await api.get<Employee[]>('/employees');
+    const response = await api.get<Employee[]>("/employees");
     return response.data;
   },
 
   create: async (data: Partial<Employee>) => {
-    const response = await api.post<Employee>('/employees', data);
+    const response = await api.post<Employee>("/employees", data);
     return response.data;
   },
 
   assignHierarchy: async (data: HierarchyAssignmentRequest) => {
-    const response = await api.post<Employee>('/employees/assign-hierarchy', data);
+    const response = await api.post<Employee>("/employees/assign-hierarchy", data);
     return response.data;
   },
-  
 };
