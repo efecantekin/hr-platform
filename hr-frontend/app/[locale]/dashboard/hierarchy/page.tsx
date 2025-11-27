@@ -2,8 +2,8 @@
 
 import { useEffect, useState } from "react";
 import { employeeService } from "../../../../services/employeeService";
-import { positionService, Position } from "../../../../services/positionService";
-import { Employee } from "../../../../types";
+import { positionService } from "../../../../services/positionService";
+import { Employee, Position } from "../../../../types";
 import Button from "../../../../components/ui/Button";
 import Select from "../../../../components/ui/Select";
 import Modal from "../../../../components/ui/Modal";

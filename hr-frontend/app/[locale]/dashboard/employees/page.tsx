@@ -5,16 +5,17 @@ import { useRouter } from "next/navigation";
 
 // Servisler
 import { employeeService } from "../../../../services/employeeService";
-import { departmentService, Department } from "../../../../services/departmentService";
-import { jobTitleService, JobTitle } from "../../../../services/jobTitleService";
+import { departmentService } from "../../../../services/departmentService";
+import { jobTitleService } from "../../../../services/jobTitleService";
 import { Employee } from "../../../../types";
 import Button from "../../../../components/ui/Button";
 import Input from "../../../../components/ui/Input";
 import Select from "../../../../components/ui/Select";
 import Modal from "../../../../components/ui/Modal";
 import Badge from "../../../../components/ui/Badge";
-import Card from "../../../../components/ui/Card";
 import DataTable, { Column } from "../../../../components/ui/Table";
+import Loading from "../../../../components/ui/Loading";
+import Card from "../../../../components/ui/Card";
 
 export default function EmployeesPage() {
   const router = useRouter();
@@ -162,9 +163,13 @@ export default function EmployeesPage() {
         <h1 className="text-2xl font-bold text-gray-800">Personel Yönetimi</h1>
         <Button onClick={() => setShowModal(true)}>+ Yeni Çalışan</Button>
       </div>
-
-      <DataTable data={employees} columns={columns} emptyMessage="Henüz kayıtlı çalışan yok." />
-
+      <Card>
+        {loading ? (
+          <Loading />
+        ) : (
+          <DataTable data={employees} columns={columns} emptyMessage="Henüz kayıtlı çalışan yok." />
+        )}
+      </Card>
       <Modal
         isOpen={showModal}
         onClose={() => setShowModal(false)}

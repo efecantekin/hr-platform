@@ -76,3 +76,18 @@ export interface SystemScreen {
   name: string;
   url: string;
 }
+
+export interface Department {
+  id: number;
+  name: string;
+}
+
+export interface Position {
+  id: number;
+  title: string;
+}
+
+export interface JobTitle {
+  id: number;
+  title: string;
+}

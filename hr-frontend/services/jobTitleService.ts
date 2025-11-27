@@ -1,9 +1,5 @@
+import { JobTitle } from "../types";
 import api from "../lib/axios";
-
-export interface JobTitle {
-  id: number;
-  title: string;
-}
 
 export const jobTitleService = {
   getAll: async () => (await api.get<JobTitle[]>("/job-titles")).data,

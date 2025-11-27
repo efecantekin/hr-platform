@@ -1,12 +1,13 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { departmentService, Department } from "../../../../services/departmentService";
+import { departmentService } from "../../../../services/departmentService";
 import Button from "../../../../components/ui/Button";
 import Input from "../../../../components/ui/Input";
 import Card from "../../../../components/ui/Card";
 import Modal from "../../../../components/ui/Modal";
 import DataTable, { Column } from "../../../../components/ui/Table";
+import { Department } from "../../../../types";
 
 export default function DepartmentsView() {
   const [list, setList] = useState<Department[]>([]);
