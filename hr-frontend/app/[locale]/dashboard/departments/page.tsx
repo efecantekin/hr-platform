@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
-import { departmentService, Department } from "../../../services/departmentService";
+import { departmentService, Department } from "../../../../services/departmentService";
 
 export default function DepartmentsPage() {
   const router = useRouter();

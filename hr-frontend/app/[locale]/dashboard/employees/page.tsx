@@ -4,10 +4,10 @@ import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 
 // Servisler
-import { employeeService } from "../../../services/employeeService";
-import { departmentService, Department } from "../../../services/departmentService";
-import { jobTitleService, JobTitle } from "../../../services/jobTitleService";
-import { Employee } from "../../../types";
+import { employeeService } from "../../../../services/employeeService";
+import { departmentService, Department } from "../../../../services/departmentService";
+import { jobTitleService, JobTitle } from "../../../../services/jobTitleService";
+import { Employee } from "../../../../types";
 
 export default function EmployeesPage() {
   const router = useRouter();

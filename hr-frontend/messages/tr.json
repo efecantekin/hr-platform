@@ -1,0 +1,21 @@
+{
+  "Auth": {
+    "title": "HR Platform Giriş",
+    "username": "Kullanıcı Adı",
+    "password": "Şifre",
+    "loginButton": "Giriş Yap",
+    "loginSuccess": "Giriş Başarılı!",
+    "loginError": "Giriş başarısız! Bilgileri kontrol edin."
+  },
+  "Sidebar": {
+    "dashboard": "Ana Sayfa",
+    "employees": "Personel Listesi",
+    "settings": "Ayarlar"
+  },
+  "Common": {
+    "save": "Kaydet",
+    "cancel": "İptal",
+    "delete": "Sil",
+    "edit": "Düzenle"
+  }
+}

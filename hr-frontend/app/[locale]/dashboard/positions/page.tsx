@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
-import { positionService, Position } from "../../../services/positionService";
+import { positionService, Position } from "../../../../services/positionService";
 
 export default function PositionsPage() {
   const router = useRouter();

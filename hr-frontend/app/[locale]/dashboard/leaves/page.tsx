@@ -3,8 +3,8 @@
 import { useEffect, useState } from "react";
 import axios from "axios";
 import { useRouter } from "next/navigation";
-import { Employee, LeaveRequest } from "../../../types";
-import { leaveService } from "../../../services/leaveService";
+import { Employee, LeaveRequest } from "../../../../types";
+import { leaveService } from "../../../../services/leaveService";
 
 export default function LeavesPage() {
   const router = useRouter();

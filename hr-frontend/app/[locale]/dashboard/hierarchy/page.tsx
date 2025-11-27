@@ -2,9 +2,9 @@
 
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
-import { employeeService } from "../../../services/employeeService";
-import { positionService, Position } from "../../../services/positionService";
-import { Employee } from "../../../types";
+import { employeeService } from "../../../../services/employeeService";
+import { positionService, Position } from "../../../../services/positionService";
+import { Employee } from "../../../../types";
 
 export default function HierarchyPage() {
   const router = useRouter();

@@ -3,8 +3,8 @@
 import { useEffect, useState } from "react";
 import axios from "axios";
 import { useRouter } from "next/navigation";
-import { DocumentRequest } from "../../../types";
-import { documentService } from "../../../services/documentService";
+import { DocumentRequest } from "../../../../types";
+import { documentService } from "../../../../services/documentService";
 
 export default function DocumentsPage() {
   const router = useRouter();

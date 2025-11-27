@@ -1,0 +1,21 @@
+{
+  "Auth": {
+    "title": "HR Platform Login",
+    "username": "Username",
+    "password": "Password",
+    "loginButton": "Sign In",
+    "loginSuccess": "Login Successful!",
+    "loginError": "Login failed! Check credentials."
+  },
+  "Sidebar": {
+    "dashboard": "Dashboard",
+    "employees": "Employees",
+    "settings": "Settings"
+  },
+  "Common": {
+    "save": "Save",
+    "cancel": "Cancel",
+    "delete": "Delete",
+    "edit": "Edit"
+  }
+}
