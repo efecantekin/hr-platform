@@ -62,3 +62,19 @@ export interface DocumentRequest {
   requestedAt: string;
   assignedHrId: number | null;
 }
+
+export interface MenuItem {
+  id: number;
+  title: string;
+  url?: string;
+  parentId?: number | null;
+  sortOrder: number;
+  children?: MenuItem[];
+  roles?: string[];
+}
+
+export interface SystemScreen {
+  id: number;
+  name: string;
+  url: string;
+}

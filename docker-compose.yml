@@ -91,11 +91,25 @@ services:
       - AUTH_URI=http://auth-service:8082
       - LEAVE_URI=http://leave-service:8083
       - DOC_URI=http://document-service:8084
+      - ADMIN_URI=http://admin-service:8085
     depends_on:
       - auth-service
       - employee-service
       - leave-service
       - document-service
+    networks:
+      - hr-network
+
+  admin-service:
+    build: ./admin-service
+    container_name: hr-admin
+    ports:
+      - "8085:8085" # Yeni port
+    environment:
+      - SPRING_DATASOURCE_URL=jdbc:postgresql://postgres-db:5432/admin_db
+    depends_on:
+      postgres-db:
+        condition: service_healthy
     networks:
       - hr-network
 
