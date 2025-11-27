@@ -1,12 +1,12 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { menuService } from "../../../services/menuService";
-import { screenService } from "../../../services/screenService";
+import { menuService } from "../../../../services/menuService";
+import { screenService } from "../../../../services/screenService";
 import { DndContext, closestCenter } from "@dnd-kit/core";
 import { SortableContext, verticalListSortingStrategy, arrayMove, useSortable } from "@dnd-kit/sortable";
 import { CSS } from "@dnd-kit/utilities";
-import { MenuItem, SystemScreen } from "../../../types";
+import { MenuItem, SystemScreen } from "../../../../types";
 
 // --- 1. SORTABLE ITEM (Sıralanabilir Satır) ---
 function SortableItem({ item, onEdit, onDelete, children }: { item: MenuItem; onEdit: (item: MenuItem) => void; onDelete: (id: number) => void; children?: React.ReactNode }) {

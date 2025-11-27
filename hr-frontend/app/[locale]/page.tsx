@@ -1,13 +1,14 @@
 "use client"; // Client-side rendering için gerekli
 
 import { useState } from "react";
-import axios from "axios";
 import { useRouter } from "next/navigation";
-
-import { authService } from "../services/authService"; // Servis importu
+import { useTranslations } from 'next-intl';
+import LanguageSwitcher from "../../components/LanguageSwitcher";
+import { authService } from "../../services/authService"; // Servis importu
 
 export default function LoginPage() {
   const router = useRouter();
+  const t = useTranslations('Auth')
   
   // Form verilerini tutacak değişkenler
   const [username, setUsername] = useState("");
@@ -45,9 +46,12 @@ export default function LoginPage() {
 
   return (
     <div className="flex min-h-screen items-center justify-center bg-gray-100">
+      <div className="absolute top-4 right-4">
+        <LanguageSwitcher />
+      </div>
       <div className="w-full max-w-md bg-white p-8 rounded-lg shadow-md">
         <h2 className="text-2xl font-bold text-center text-gray-800 mb-6">
-          HR Platform Giriş
+          {t('title')}
         </h2>
 
         {error && (

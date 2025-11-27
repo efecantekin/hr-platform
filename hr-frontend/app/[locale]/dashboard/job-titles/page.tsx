@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
-import { jobTitleService, JobTitle } from "../../../services/jobTitleService";
+import { jobTitleService, JobTitle } from "../../../../services/jobTitleService";
 
 export default function JobTitlesPage() {
   const router = useRouter();
