@@ -4,11 +4,7 @@ import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import Sidebar from "../../../components/Sidebar"; // Sidebar'ı import et
 
-export default function DashboardLayout({
-  children,
-}: {
-  children: React.ReactNode;
-}) {
+export default function DashboardLayout({ children }: { children: React.ReactNode }) {
   const router = useRouter();
   const [userRole, setUserRole] = useState("");
   const [username, setUsername] = useState("");
@@ -34,11 +30,13 @@ export default function DashboardLayout({
 
   return (
     <div className="min-h-screen bg-gray-100 flex">
-      
       {/* --- SOL SIDEBAR (MENÜ) --- */}
       <aside className="w-64 bg-white border-r border-gray-200 hidden md:flex flex-col fixed h-full z-10">
         {/* Logo Alanı */}
-        <div className="h-16 flex items-center px-6 border-b border-gray-200 cursor-pointer" onClick={() => router.push("/dashboard")}>
+        <div
+          className="h-16 flex items-center px-6 border-b border-gray-200 cursor-pointer"
+          onClick={() => router.push("/dashboard")}
+        >
           <div className="w-8 h-8 bg-blue-600 rounded-lg flex items-center justify-center text-white font-bold text-xl mr-3">
             HR
           </div>
@@ -58,7 +56,6 @@ export default function DashboardLayout({
 
       {/* --- SAĞ TARAF (İÇERİK) --- */}
       <div className="flex-1 flex flex-col md:ml-64 transition-all duration-300">
-        
         {/* Üst Header (Sadece Profil ve Çıkış) */}
         <header className="bg-white h-16 border-b border-gray-200 flex items-center justify-end px-8 shadow-sm sticky top-0 z-20">
           <div className="flex items-center gap-4">
@@ -68,22 +65,31 @@ export default function DashboardLayout({
                 {userRole}
               </span>
             </div>
-            <button 
+            <button
               onClick={handleLogout}
               className="bg-red-50 text-red-600 p-2 rounded-full hover:bg-red-100 transition border border-red-100"
               title="Çıkış Yap"
             >
-              <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-5 h-5">
-                <path strokeLinecap="round" strokeLinejoin="round" d="M15.75 9V5.25A2.25 2.25 0 0013.5 3h-6a2.25 2.25 0 00-2.25 2.25v13.5A2.25 2.25 0 007.5 21h6a2.25 2.25 0 002.25-2.25V15M12 9l-3 3m0 0l3 3m-3-3h12.75" />
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                fill="none"
+                viewBox="0 0 24 24"
+                strokeWidth={1.5}
+                stroke="currentColor"
+                className="w-5 h-5"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  d="M15.75 9V5.25A2.25 2.25 0 0013.5 3h-6a2.25 2.25 0 00-2.25 2.25v13.5A2.25 2.25 0 007.5 21h6a2.25 2.25 0 002.25-2.25V15M12 9l-3 3m0 0l3 3m-3-3h12.75"
+                />
               </svg>
             </button>
           </div>
         </header>
 
         {/* Sayfa İçeriği */}
-        <main className="p-8">
-          {children}
-        </main>
+        <main className="p-8">{children}</main>
       </div>
     </div>
   );

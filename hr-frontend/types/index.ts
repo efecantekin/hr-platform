@@ -13,9 +13,9 @@ export interface Employee {
 }
 
 export interface HierarchyAssignmentRequest {
-    subordinateId: number;
-    managerId: number;
-    managerPosition: string | null;
+  subordinateId: number;
+  managerId: number;
+  managerPosition: string | null;
 }
 
 export interface AuthResponse {
@@ -31,14 +31,14 @@ export interface AuthResponse {
 }
 
 export interface LoginRequest {
-    username: string;
-    password: string;
+  username: string;
+  password: string;
 }
 
 export interface HierarchyAssignmentRequest {
-    subordinateId: number;
-    managerId: number;
-    managerPosition: string | null;
+  subordinateId: number;
+  managerId: number;
+  managerPosition: string | null;
 }
 
 export interface LeaveRequest {

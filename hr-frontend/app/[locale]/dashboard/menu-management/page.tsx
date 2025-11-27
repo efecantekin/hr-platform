@@ -4,12 +4,27 @@ import { useEffect, useState } from "react";
 import { menuService } from "../../../../services/menuService";
 import { screenService } from "../../../../services/screenService";
 import { DndContext, closestCenter } from "@dnd-kit/core";
-import { SortableContext, verticalListSortingStrategy, arrayMove, useSortable } from "@dnd-kit/sortable";
+import {
+  SortableContext,
+  verticalListSortingStrategy,
+  arrayMove,
+  useSortable,
+} from "@dnd-kit/sortable";
 import { CSS } from "@dnd-kit/utilities";
 import { MenuItem, SystemScreen } from "../../../../types";
 
 // --- 1. SORTABLE ITEM (Sıralanabilir Satır) ---
-function SortableItem({ item, onEdit, onDelete, children }: { item: MenuItem; onEdit: (item: MenuItem) => void; onDelete: (id: number) => void; children?: React.ReactNode }) {
+function SortableItem({
+  item,
+  onEdit,
+  onDelete,
+  children,
+}: {
+  item: MenuItem;
+  onEdit: (item: MenuItem) => void;
+  onDelete: (id: number) => void;
+  children?: React.ReactNode;
+}) {
   const { attributes, listeners, setNodeRef, transform, transition } = useSortable({ id: item.id });
 
   const style = {
@@ -25,7 +40,11 @@ function SortableItem({ item, onEdit, onDelete, children }: { item: MenuItem; on
           <span className="text-gray-400 text-lg">::</span> {/* Tutma sapı */}
           <div>
             <span className="font-bold text-gray-800">{item.title}</span>
-            {item.url && <span className="ml-2 text-xs text-blue-500 bg-blue-50 px-2 py-1 rounded border border-blue-100">{item.url}</span>}
+            {item.url && (
+              <span className="ml-2 text-xs text-blue-500 bg-blue-50 px-2 py-1 rounded border border-blue-100">
+                {item.url}
+              </span>
+            )}
 
             {/* Roller */}
             {item.roles && item.roles.length > 0 && (
@@ -37,25 +56,35 @@ function SortableItem({ item, onEdit, onDelete, children }: { item: MenuItem; on
         </div>
 
         <div className="flex gap-2">
-          <button onPointerDown={(e) => e.stopPropagation()} onClick={() => onEdit(item)} className="text-blue-500 text-xs font-bold px-1 bg-blue-50 rounded hover:bg-blue-100">Düzenle</button>
-          <button onPointerDown={(e) => e.stopPropagation()} onClick={() => onDelete(item.id)} className="text-red-500 text-xs font-bold px-1 bg-red-50 rounded hover:bg-red-100">Sil</button>
+          <button
+            onPointerDown={(e) => e.stopPropagation()}
+            onClick={() => onEdit(item)}
+            className="text-blue-500 text-xs font-bold px-1 bg-blue-50 rounded hover:bg-blue-100"
+          >
+            Düzenle
+          </button>
+          <button
+            onPointerDown={(e) => e.stopPropagation()}
+            onClick={() => onDelete(item.id)}
+            className="text-red-500 text-xs font-bold px-1 bg-red-50 rounded hover:bg-red-100"
+          >
+            Sil
+          </button>
         </div>
       </div>
 
       {/* Alt Menüler (Varsa Buraya Render Edilir) */}
-      <div className="pl-8 mt-1 border-l-2 border-gray-100">
-        {children}
-      </div>
+      <div className="pl-8 mt-1 border-l-2 border-gray-100">{children}</div>
     </div>
   );
 }
 
 // --- 2. RECURSIVE LIST (İç İçe Sıralanabilir Liste) ---
 // Bu bileşen hem kök listeyi hem de alt listeleri render eder.
-function MenuList({ items, onEdit, onDelete }: { items: MenuItem[], onEdit: any, onDelete: any }) {
+function MenuList({ items, onEdit, onDelete }: { items: MenuItem[]; onEdit: any; onDelete: any }) {
   return (
-    <SortableContext items={items.map(i => i.id)} strategy={verticalListSortingStrategy}>
-      {items.map(item => (
+    <SortableContext items={items.map((i) => i.id)} strategy={verticalListSortingStrategy}>
+      {items.map((item) => (
         <SortableItem key={item.id} item={item} onEdit={onEdit} onDelete={onDelete}>
           {/* Eğer alt menü varsa, kendini tekrar çağırır (Recursion) */}
           {item.children && item.children.length > 0 && (
@@ -77,7 +106,12 @@ export default function MenuManagementPage() {
   const [showScreenModal, setShowScreenModal] = useState(false);
 
   // Formlar
-  const [menuForm, setMenuForm] = useState({ title: "", url: "", parentId: "", roles: [] as string[] });
+  const [menuForm, setMenuForm] = useState({
+    title: "",
+    url: "",
+    parentId: "",
+    roles: [] as string[],
+  });
   const [screenForm, setScreenForm] = useState({ name: "", url: "" });
   const [editingId, setEditingId] = useState<number | null>(null);
 
@@ -89,13 +123,12 @@ export default function MenuManagementPage() {
 
   const fetchData = async () => {
     try {
-      const [tree, screens] = await Promise.all([
-        menuService.getTree(),
-        screenService.getAll()
-      ]);
+      const [tree, screens] = await Promise.all([menuService.getTree(), screenService.getAll()]);
       setMenuItems(tree);
       setAvailableScreens(screens);
-    } catch (error) { console.error("Veri çekme hatası:", error); }
+    } catch (error) {
+      console.error("Veri çekme hatası:", error);
+    }
   };
 
   // --- DRAG & DROP MANTIĞI (GELİŞMİŞ) ---
@@ -103,7 +136,7 @@ export default function MenuManagementPage() {
   // Ağaçta belirli bir ID'nin bulunduğu diziyi (container) bulur
   const findContainer = (id: number, items: MenuItem[]): MenuItem[] | undefined => {
     // 1. Kök dizide mi?
-    if (items.find(i => i.id === id)) return items;
+    if (items.find((i) => i.id === id)) return items;
 
     // 2. Çocuklarda ara
     for (const item of items) {
@@ -136,7 +169,7 @@ export default function MenuManagementPage() {
       // Yer değiştir
       const reorderedList = arrayMove(activeContainer, oldIndex, newIndex);
 
-      // Orijinal ağaçtaki diziyi güncellememiz lazım. 
+      // Orijinal ağaçtaki diziyi güncellememiz lazım.
       // Javascript referans ile çalıştığı için 'activeContainer' zaten 'newTree'nin bir parçasıdır.
       // Ancak arrayMove yeni bir dizi döner, bu yüzden referansı güncellemeliyiz.
       // Bu kısım biraz trikili olduğu için en garantisi:
@@ -151,11 +184,11 @@ export default function MenuManagementPage() {
       // Backend için sıralama verisi
       const orderPayload = activeContainer.map((item: MenuItem, index: number) => ({
         id: item.id,
-        sortOrder: index + 1
+        sortOrder: index + 1,
       }));
 
       // Kaydet
-      menuService.updateOrder(orderPayload).catch(err => {
+      menuService.updateOrder(orderPayload).catch((err) => {
         console.error("Sıralama hatası", err);
         alert("Sıralama kaydedilemedi!");
         fetchData(); // Hata varsa geri al
@@ -173,7 +206,7 @@ export default function MenuManagementPage() {
       url: item.url || "",
       parentId: item.parentId ? item.parentId.toString() : "",
       // FIX: Roles null gelebilir, boş diziye çevir ve kopyala
-      roles: item.roles ? [...item.roles] : []
+      roles: item.roles ? [...item.roles] : [],
     });
     setShowMenuModal(true);
   };
@@ -186,7 +219,7 @@ export default function MenuManagementPage() {
 
   const getAllUsedUrls = (nodes: MenuItem[]): string[] => {
     let urls: string[] = [];
-    nodes.forEach(node => {
+    nodes.forEach((node) => {
       if (node.url) urls.push(node.url);
       if (node.children && node.children.length > 0) {
         urls = [...urls, ...getAllUsedUrls(node.children)];
@@ -198,14 +231,14 @@ export default function MenuManagementPage() {
   const handleSaveMenu = async (e: React.FormEvent) => {
     e.preventDefault();
     // Yeni eklendiğinde listenin sonuna atıyoruz
-    // Not: Kök menüye ekliyorsak kök sayısı, alta ekliyorsak oranın sayısı... 
+    // Not: Kök menüye ekliyorsak kök sayısı, alta ekliyorsak oranın sayısı...
     // Basitlik için varsayılan 99 verdik, sürükleyince düzelir.
     const payload = {
       title: menuForm.title,
       url: menuForm.url,
       sortOrder: 99,
       parentId: menuForm.parentId ? Number(menuForm.parentId) : null,
-      roles: menuForm.roles
+      roles: menuForm.roles,
     };
 
     try {
@@ -218,7 +251,9 @@ export default function MenuManagementPage() {
       }
       closeMenuModal();
       fetchData();
-    } catch (error) { alert("İşlem başarısız oldu."); }
+    } catch (error) {
+      alert("İşlem başarısız oldu.");
+    }
   };
 
   const handleDeleteMenu = async (id: number) => {
@@ -228,21 +263,34 @@ export default function MenuManagementPage() {
   };
 
   const handleRoleChange = (role: string) => {
-    setMenuForm(prev => {
+    setMenuForm((prev) => {
       const newRoles = prev.roles.includes(role)
-        ? prev.roles.filter(r => r !== role)
+        ? prev.roles.filter((r) => r !== role)
         : [...prev.roles, role];
       return { ...prev, roles: newRoles };
     });
   };
 
   // Ekran İşlemleri
-  const handleCreateScreen = async (e: React.FormEvent) => { e.preventDefault(); await screenService.create(screenForm); setShowScreenModal(false); setScreenForm({ name: "", url: "" }); const screens = await screenService.getAll(); setAvailableScreens(screens); };
-  const handleDeleteScreen = async (id: number, e: React.MouseEvent) => { e.stopPropagation(); if (!confirm("Silinsin mi?")) return; await screenService.delete(id); const screens = await screenService.getAll(); setAvailableScreens(screens); };
+  const handleCreateScreen = async (e: React.FormEvent) => {
+    e.preventDefault();
+    await screenService.create(screenForm);
+    setShowScreenModal(false);
+    setScreenForm({ name: "", url: "" });
+    const screens = await screenService.getAll();
+    setAvailableScreens(screens);
+  };
+  const handleDeleteScreen = async (id: number, e: React.MouseEvent) => {
+    e.stopPropagation();
+    if (!confirm("Silinsin mi?")) return;
+    await screenService.delete(id);
+    const screens = await screenService.getAll();
+    setAvailableScreens(screens);
+  };
 
   // Helper: Ağacı düzleştir (Parent seçimi için)
   const getAllPotentialParents = (nodes: MenuItem[], list: MenuItem[] = []): MenuItem[] => {
-    nodes.forEach(node => {
+    nodes.forEach((node) => {
       list.push(node);
       if (node.children) getAllPotentialParents(node.children, list);
     });
@@ -251,13 +299,18 @@ export default function MenuManagementPage() {
   const allParents = getAllPotentialParents(menuItems);
 
   const usedUrls = getAllUsedUrls(menuItems);
-  const filteredScreens = availableScreens.filter(screen => !usedUrls.includes(screen.url));
+  const filteredScreens = availableScreens.filter((screen) => !usedUrls.includes(screen.url));
 
   return (
     <div className="min-h-screen bg-gray-50 p-8">
       <div className="flex justify-between items-center mb-6">
         <h1 className="text-2xl font-bold text-gray-800">Menü Yönetimi</h1>
-        <button onClick={() => setShowMenuModal(true)} className="bg-blue-600 text-white px-4 py-2 rounded shadow">+ Yeni Menü Ekle</button>
+        <button
+          onClick={() => setShowMenuModal(true)}
+          className="bg-blue-600 text-white px-4 py-2 rounded shadow"
+        >
+          + Yeni Menü Ekle
+        </button>
       </div>
 
       <div className="grid grid-cols-3 gap-6">
@@ -265,7 +318,12 @@ export default function MenuManagementPage() {
         <div className="col-span-1 bg-white p-4 rounded shadow h-fit border border-gray-200">
           <div className="flex justify-between items-center mb-4 border-b pb-2">
             <h3 className="font-bold text-gray-700">Hazır Ekranlar</h3>
-            <button onClick={() => setShowScreenModal(true)} className="text-xs bg-green-100 text-green-700 px-2 py-1 rounded font-bold">+ Tanımla</button>
+            <button
+              onClick={() => setShowScreenModal(true)}
+              className="text-xs bg-green-100 text-green-700 px-2 py-1 rounded font-bold"
+            >
+              + Tanımla
+            </button>
           </div>
           {filteredScreens.length === 0 ? (
             <div className="text-center py-8">
@@ -275,16 +333,29 @@ export default function MenuManagementPage() {
           ) : (
             <ul className="space-y-2 max-h-[500px] overflow-y-auto pr-1 custom-scrollbar">
               {filteredScreens.map((screen) => (
-                <li key={screen.id} className="text-sm p-3 bg-gray-50 border rounded flex justify-between items-center group cursor-pointer hover:bg-blue-50"
-                  onClick={() => { setEditingId(null); setMenuForm({ title: screen.name, url: screen.url, parentId: "", roles: [] }); setShowMenuModal(true); }}>
+                <li
+                  key={screen.id}
+                  className="text-sm p-3 bg-gray-50 border rounded flex justify-between items-center group cursor-pointer hover:bg-blue-50"
+                  onClick={() => {
+                    setEditingId(null);
+                    setMenuForm({ title: screen.name, url: screen.url, parentId: "", roles: [] });
+                    setShowMenuModal(true);
+                  }}
+                >
                   <div className="flex flex-col overflow-hidden">
                     <span className="font-medium text-gray-700">{screen.name}</span>
                     <span className="text-[10px] text-gray-400 truncate">{screen.url}</span>
                   </div>
-                  <button onClick={(e) => handleDeleteScreen(screen.id, e)} className="text-gray-300 hover:text-red-500 px-2">✕</button>
+                  <button
+                    onClick={(e) => handleDeleteScreen(screen.id, e)}
+                    className="text-gray-300 hover:text-red-500 px-2"
+                  >
+                    ✕
+                  </button>
                 </li>
               ))}
-            </ul>)}
+            </ul>
+          )}
         </div>
 
         {/* SAĞ: Menü Ağacı (RECURSIVE DND) */}
@@ -301,18 +372,72 @@ export default function MenuManagementPage() {
       {showMenuModal && (
         <div className="fixed inset-0 bg-gray-900 bg-opacity-50 flex items-center justify-center z-50">
           <div className="bg-white p-6 rounded-lg shadow-xl w-96">
-            <h3 className="font-bold mb-4 text-lg">{editingId ? "Menüyü Düzenle" : "Yeni Menü Ekle"}</h3>
+            <h3 className="font-bold mb-4 text-lg">
+              {editingId ? "Menüyü Düzenle" : "Yeni Menü Ekle"}
+            </h3>
             <form onSubmit={handleSaveMenu}>
-              <div className="mb-3"><label className="block text-xs font-bold mb-1">Başlık</label><input className="w-full border p-2 rounded text-black" value={menuForm.title} onChange={e => setMenuForm({ ...menuForm, title: e.target.value })} required /></div>
-              <div className="mb-3"><label className="block text-xs font-bold mb-1">URL</label><input className="w-full border p-2 rounded text-black" value={menuForm.url} onChange={e => setMenuForm({ ...menuForm, url: e.target.value })} /></div>
-              <div className="mb-3"><label className="block text-xs font-bold mb-1">Üst Menü</label>
-                <select className="w-full border p-2 rounded text-black" value={menuForm.parentId} onChange={e => setMenuForm({ ...menuForm, parentId: e.target.value })}>
+              <div className="mb-3">
+                <label className="block text-xs font-bold mb-1">Başlık</label>
+                <input
+                  className="w-full border p-2 rounded text-black"
+                  value={menuForm.title}
+                  onChange={(e) => setMenuForm({ ...menuForm, title: e.target.value })}
+                  required
+                />
+              </div>
+              <div className="mb-3">
+                <label className="block text-xs font-bold mb-1">URL</label>
+                <input
+                  className="w-full border p-2 rounded text-black"
+                  value={menuForm.url}
+                  onChange={(e) => setMenuForm({ ...menuForm, url: e.target.value })}
+                />
+              </div>
+              <div className="mb-3">
+                <label className="block text-xs font-bold mb-1">Üst Menü</label>
+                <select
+                  className="w-full border p-2 rounded text-black"
+                  value={menuForm.parentId}
+                  onChange={(e) => setMenuForm({ ...menuForm, parentId: e.target.value })}
+                >
                   <option value="">-- Kök --</option>
-                  {allParents.filter(p => p.id !== editingId).map(p => <option key={p.id} value={p.id}>{p.title}</option>)}
+                  {allParents
+                    .filter((p) => p.id !== editingId)
+                    .map((p) => (
+                      <option key={p.id} value={p.id}>
+                        {p.title}
+                      </option>
+                    ))}
                 </select>
               </div>
-              <div className="mb-4 bg-gray-50 p-3 rounded border"><label className="block text-xs font-bold mb-2">Roller</label><div className="flex gap-2 flex-wrap">{AVAILABLE_ROLES.map(role => (<label key={role} className="flex items-center space-x-1 cursor-pointer"><input type="checkbox" checked={menuForm.roles.includes(role)} onChange={() => handleRoleChange(role)} className="rounded text-blue-600 w-4 h-4" /><span className="text-xs">{role}</span></label>))}</div></div>
-              <div className="flex justify-end gap-2"><button type="button" onClick={closeMenuModal} className="bg-gray-200 px-4 py-2 rounded text-black">İptal</button><button className="bg-blue-600 text-white px-4 py-2 rounded">{editingId ? "Güncelle" : "Kaydet"}</button></div>
+              <div className="mb-4 bg-gray-50 p-3 rounded border">
+                <label className="block text-xs font-bold mb-2">Roller</label>
+                <div className="flex gap-2 flex-wrap">
+                  {AVAILABLE_ROLES.map((role) => (
+                    <label key={role} className="flex items-center space-x-1 cursor-pointer">
+                      <input
+                        type="checkbox"
+                        checked={menuForm.roles.includes(role)}
+                        onChange={() => handleRoleChange(role)}
+                        className="rounded text-blue-600 w-4 h-4"
+                      />
+                      <span className="text-xs">{role}</span>
+                    </label>
+                  ))}
+                </div>
+              </div>
+              <div className="flex justify-end gap-2">
+                <button
+                  type="button"
+                  onClick={closeMenuModal}
+                  className="bg-gray-200 px-4 py-2 rounded text-black"
+                >
+                  İptal
+                </button>
+                <button className="bg-blue-600 text-white px-4 py-2 rounded">
+                  {editingId ? "Güncelle" : "Kaydet"}
+                </button>
+              </div>
             </form>
           </div>
         </div>
@@ -324,9 +449,34 @@ export default function MenuManagementPage() {
           <div className="bg-white p-6 rounded shadow-xl w-96 border-t-4 border-green-500">
             <h3 className="font-bold mb-1 text-lg">Yeni Ekran</h3>
             <form onSubmit={handleCreateScreen}>
-              <div className="mb-3"><label className="block text-xs font-bold mb-1">Ad</label><input className="w-full border p-2 rounded text-black" value={screenForm.name} onChange={e => setScreenForm({ ...screenForm, name: e.target.value })} required /></div>
-              <div className="mb-4"><label className="block text-xs font-bold mb-1">Yol</label><input className="w-full border p-2 rounded text-black" value={screenForm.url} onChange={e => setScreenForm({ ...screenForm, url: e.target.value })} required /></div>
-              <div className="flex justify-end gap-2"><button type="button" onClick={() => setShowScreenModal(false)} className="bg-gray-200 px-4 py-2 rounded text-black">İptal</button><button className="bg-green-600 text-white px-4 py-2 rounded">Tanımla</button></div>
+              <div className="mb-3">
+                <label className="block text-xs font-bold mb-1">Ad</label>
+                <input
+                  className="w-full border p-2 rounded text-black"
+                  value={screenForm.name}
+                  onChange={(e) => setScreenForm({ ...screenForm, name: e.target.value })}
+                  required
+                />
+              </div>
+              <div className="mb-4">
+                <label className="block text-xs font-bold mb-1">Yol</label>
+                <input
+                  className="w-full border p-2 rounded text-black"
+                  value={screenForm.url}
+                  onChange={(e) => setScreenForm({ ...screenForm, url: e.target.value })}
+                  required
+                />
+              </div>
+              <div className="flex justify-end gap-2">
+                <button
+                  type="button"
+                  onClick={() => setShowScreenModal(false)}
+                  className="bg-gray-200 px-4 py-2 rounded text-black"
+                >
+                  İptal
+                </button>
+                <button className="bg-green-600 text-white px-4 py-2 rounded">Tanımla</button>
+              </div>
             </form>
           </div>
         </div>

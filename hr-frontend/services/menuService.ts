@@ -1,13 +1,13 @@
-import { MenuItem } from '../types';
-import api from '../lib/axios';
+import { MenuItem } from "../types";
+import api from "../lib/axios";
 
 export const menuService = {
   getTree: async () => {
-    const response = await api.get<MenuItem[]>('/menus');
+    const response = await api.get<MenuItem[]>("/menus");
     return response.data;
   },
   create: async (data: Partial<MenuItem>) => {
-    const response = await api.post('/menus', data);
+    const response = await api.post("/menus", data);
     return response.data;
   },
   update: async (id: number, data: Partial<MenuItem>) => {
@@ -18,6 +18,6 @@ export const menuService = {
     await api.delete(`/menus/${id}`);
   },
   updateOrder: async (items: { id: number; sortOrder: number }[]) => {
-    await api.put('/menus/update-order', items);
-  }
+    await api.put("/menus/update-order", items);
+  },
 };

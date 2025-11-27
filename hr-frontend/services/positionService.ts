@@ -1,4 +1,4 @@
-import api from '../lib/axios';
+import api from "../lib/axios";
 
 export interface Position {
   id: number;
@@ -7,12 +7,12 @@ export interface Position {
 
 export const positionService = {
   getAll: async () => {
-    const response = await api.get<Position[]>('/positions');
+    const response = await api.get<Position[]>("/positions");
     return response.data;
   },
 
   create: async (title: string) => {
-    const response = await api.post<Position>('/positions', { title });
+    const response = await api.post<Position>("/positions", { title });
     return response.data;
   },
 
@@ -23,5 +23,5 @@ export const positionService = {
 
   delete: async (id: number) => {
     await api.delete(`/positions/${id}`);
-  }
+  },
 };
