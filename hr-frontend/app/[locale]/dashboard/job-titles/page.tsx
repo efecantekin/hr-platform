@@ -1,12 +1,13 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { jobTitleService, JobTitle } from "../services/jobTitleService";
-import Button from "../components/ui/Button";
-import Input from "../components/ui/Input";
-import Card from "../components/ui/Card";
-import Modal from "../components/ui/Modal";
-import DataTable, { Column } from "../components/ui/Table";
+import { jobTitleService } from "../../../../services/jobTitleService";
+import Button from "../../../../components/ui/Button";
+import Input from "../../../../components/ui/Input";
+import Card from "../../../../components/ui/Card";
+import Modal from "../../../../components/ui/Modal";
+import DataTable, { Column } from "../../../../components/ui/Table";
+import { JobTitle } from "../../../../types";
 
 export default function JobTitlesView() {
   // State Tanımları

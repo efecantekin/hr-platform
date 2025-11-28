@@ -42,12 +42,57 @@ export default function HierarchyView() {
     }
   };
 
-  // ... (handleAssignHierarchy ve handleManagerSelectChange kodları AYNI kalacak, buraya kopyalamadım) ...
-  const handleAssignHierarchy = async (e: React.FormEvent) => {
-    /* ÖNCEKİ KODUN AYNISI */
-  };
   const handleManagerSelectChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
-    /* ÖNCEKİ KODUN AYNISI */
+    const managerId = Number(e.target.value);
+    setSelectedManagerId(managerId);
+
+    if (managerId) {
+      const manager = employees.find((e) => e.id === managerId);
+
+      // KURAL: Seçilen yöneticinin pozisyonu yoksa, zorunlu alan aç
+      if (manager && (!manager.position || manager.position.trim() === "")) {
+        setIsPositionRequired(true);
+        setManagerPositionInput(""); // Seçimi sıfırla
+      } else {
+        setIsPositionRequired(false);
+        setManagerPositionInput(manager?.position || "");
+      }
+    } else {
+      setIsPositionRequired(false);
+    }
+  };
+
+  const handleAssignHierarchy = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!selectedSubordinate || !selectedManagerId) return;
+
+    if (isPositionRequired && managerPositionInput.trim() === "") {
+      alert("İş kuralı: Yöneticinin pozisyon bilgisi seçilmelidir!");
+      return;
+    }
+
+    if (selectedSubordinate.id === selectedManagerId) {
+      alert("Kişi kendi kendisinin yöneticisi olamaz!");
+      return;
+    }
+
+    try {
+      const payload = {
+        subordinateId: selectedSubordinate.id,
+        managerId: selectedManagerId,
+        // Eğer zorunluysa yeni seçilen pozisyonu, değilse null gönder
+        managerPosition: isPositionRequired ? managerPositionInput : null,
+      };
+
+      await employeeService.assignHierarchy(payload);
+
+      alert(`Atama başarılı!`);
+      setShowModal(false);
+      fetchData(); // Listeyi yenile
+    } catch (error) {
+      console.error("Atama Hatası:", error);
+      alert("İşlem başarısız.");
+    }
   };
 
   // Yardımcı
