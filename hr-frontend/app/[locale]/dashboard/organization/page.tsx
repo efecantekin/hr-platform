@@ -3,18 +3,8 @@
 import { useEffect, useState } from "react";
 import axios from "axios";
 import { useRouter } from "next/navigation";
-
-// 1. TİP GÜNCELLEMESİ: position eklendi
-interface Employee {
-  id: number;
-  firstName: string;
-  lastName: string;
-  jobTitle: string;
-  department: string;
-  managerId: number | null;
-  position: string | null; // <--- YENİ
-  children?: Employee[];
-}
+import { employeeService } from "../../../../services/employeeService";
+import { Employee } from "../../../../types";
 
 export default function OrganizationPage() {
   const router = useRouter();
@@ -27,20 +17,19 @@ export default function OrganizationPage() {
       router.push("/");
       return;
     }
-    fetchAllEmployees(token);
+    fetchAllEmployees();
   }, [router]);
 
-  const fetchAllEmployees = async (token: string) => {
+  const fetchAllEmployees = async () => {
     try {
-      const response = await axios.get("http://localhost:8080/api/employees", {
-        headers: { Authorization: `Bearer ${token}` },
-      });
+      // 1. Servisi Çağır (URL ve Header otomatik)
+      const flatList = await employeeService.getAll();
 
-      const flatList: Employee[] = response.data;
+      // 2. Ağaç yapısına çevir (Mevcut mantık)
       const tree = buildTree(flatList);
       setTreeData(tree);
     } catch (err) {
-      console.error(err);
+      console.error("Veri çekme hatası:", err);
     } finally {
       setLoading(false);
     }
@@ -123,11 +112,15 @@ function EmployeeNode({ node, level }: { node: Employee; level: number }) {
 
         {/* Kart */}
         <div
-          className={`border p-3 rounded-lg flex items-center gap-4 shadow-sm min-w-[300px] transition-all hover:shadow-md bg-white ${hasChildren ? "border-indigo-200" : "border-gray-200"}`}
+          className={`border p-3 rounded-lg flex items-center gap-4 shadow-sm min-w-[300px] transition-all hover:shadow-md bg-white ${
+            hasChildren ? "border-indigo-200" : "border-gray-200"
+          }`}
         >
           {/* Avatar (Baş Harfler) */}
           <div
-            className={`w-10 h-10 rounded-full flex items-center justify-center text-white font-bold text-sm ${node.position ? "bg-indigo-600" : "bg-gray-400"}`}
+            className={`w-10 h-10 rounded-full flex items-center justify-center text-white font-bold text-sm ${
+              node.position ? "bg-indigo-600" : "bg-gray-400"
+            }`}
           >
             {node.firstName.charAt(0)}
             {node.lastName.charAt(0)}
