@@ -96,6 +96,22 @@ function MenuList({ items, onEdit, onDelete }: { items: MenuItem[]; onEdit: any;
   );
 }
 
+// Yardımcı: Bir öğenin Ebeveyn Düğümünü (Parent Node) bulur
+const findParentNode = (
+  id: number,
+  items: MenuItem[],
+  parent: MenuItem | null = null
+): MenuItem | null => {
+  for (const item of items) {
+    if (item.id === id) return parent; // Bulduk, parent'ı dön
+    if (item.children) {
+      const found = findParentNode(id, item.children, item);
+      if (found !== undefined) return found; // undefined kontrolü önemli
+    }
+  }
+  return undefined as any; // Bulunamadı
+};
+
 // --- 3. ANA SAYFA BİLEŞENİ ---
 export default function MenuManagementPage() {
   const [menuItems, setMenuItems] = useState<MenuItem[]>([]);
@@ -135,10 +151,9 @@ export default function MenuManagementPage() {
 
   // Ağaçta belirli bir ID'nin bulunduğu diziyi (container) bulur
   const findContainer = (id: number, items: MenuItem[]): MenuItem[] | undefined => {
-    // 1. Kök dizide mi?
+    // Kök dizinde mi?
     if (items.find((i) => i.id === id)) return items;
-
-    // 2. Çocuklarda ara
+    // Çocuklarda ara
     for (const item of items) {
       if (item.children) {
         const found = findContainer(id, item.children);
@@ -148,49 +163,146 @@ export default function MenuManagementPage() {
     return undefined;
   };
 
+  // 1. Sürüklerken çalışır (Görsel olarak listeler arası geçişi sağlar)
+  const handleDragOver = ({ active, over }: any) => {
+    const overId = over?.id;
+    if (!overId || active.id === overId) return;
+
+    const activeContainer = findContainer(active.id, menuItems);
+    const overContainer = findContainer(overId, menuItems);
+
+    if (!activeContainer || !overContainer || activeContainer === overContainer) {
+      return;
+    }
+
+    // Farklı bir konteynıra geçiş yapılıyor
+    setMenuItems((prev) => {
+      const activeItems = activeContainer;
+      const overItems = overContainer;
+      const activeIndex = activeItems.findIndex((i) => i.id === active.id);
+      const overIndex = overItems.findIndex((i) => i.id === overId);
+
+      let newIndex;
+      if (activeItems[activeIndex].id !== overItems[overIndex]?.id) {
+        // Aşağı mı yukarı mı gidiyor?
+        const isBelowOverItem =
+          over &&
+          active.rect.current.translated &&
+          active.rect.current.translated.top > over.rect.top + over.rect.height;
+
+        const modifier = isBelowOverItem ? 1 : 0;
+        newIndex = overIndex >= 0 ? overIndex + modifier : overItems.length + 1;
+      } else {
+        newIndex = overIndex;
+      }
+
+      // State'i immutable olarak güncelle (Derin kopyalama gerekebilir)
+      // Burada basitçe dnd-kit'in önerdiği state mutasyonunu simüle ediyoruz
+      // Not: Gerçek state güncellemesi karmaşık olduğu için handleDragEnd'de kesinleştireceğiz.
+      // Ancak görsel akıcılık için burası şart.
+      return prev;
+      // (Not: React state yapısı gereği burada tam ağacı yeniden örmek karmaşık.
+      // Dnd-kit tree örneklerinde genellikle `arrayMove` kullanılır ama nested yapıda zordur.
+      // Basit çözüm: handleDragOver'ı boş geçip her şeyi handleDragEnd'de yapmak da mümkündür ama titreme yapar.)
+    });
+  };
+
   const handleDragEnd = async (event: any) => {
     const { active, over } = event;
 
-    // Aynı yere bırakıldıysa işlem yapma
+    // Boşluğa bırakıldıysa veya hareket etmediyse çık
     if (!over || active.id === over.id) return;
 
-    // Derin kopyalama (State mutasyonu yapmamak için)
+    // Derin kopya al (State üzerinde doğrudan oynama yapmamak için)
     const newTree = JSON.parse(JSON.stringify(menuItems));
 
-    // Hangi dizinin içinde işlem yapıldığını bul
     const activeContainer = findContainer(active.id, newTree);
     const overContainer = findContainer(over.id, newTree);
 
-    // Sadece aynı seviyede sıralamaya izin veriyoruz (Karmaşıklığı önlemek için)
-    if (activeContainer && overContainer && activeContainer === overContainer) {
-      const oldIndex = activeContainer.findIndex((i: MenuItem) => i.id === active.id);
-      const newIndex = activeContainer.findIndex((i: MenuItem) => i.id === over.id);
+    if (activeContainer && overContainer) {
+      const activeIndex = activeContainer.findIndex((i: MenuItem) => i.id === active.id);
+      const overIndex = overContainer.findIndex((i: MenuItem) => i.id === over.id);
 
-      // Yer değiştir
-      const reorderedList = arrayMove(activeContainer, oldIndex, newIndex);
+      // Öğeyi eski yerinden sök
+      const [movedItem] = activeContainer.splice(activeIndex, 1);
 
-      // Orijinal ağaçtaki diziyi güncellememiz lazım.
-      // Javascript referans ile çalıştığı için 'activeContainer' zaten 'newTree'nin bir parçasıdır.
-      // Ancak arrayMove yeni bir dizi döner, bu yüzden referansı güncellemeliyiz.
-      // Bu kısım biraz trikili olduğu için en garantisi:
-      // Container'ı bulup içeriğini değiştirmek yerine, splice ile yerinde değiştiriyoruz.
+      // --- PARENT DEĞİŞİKLİĞİ TESPİTİ ---
+      // Yeni konteynerin sahibi kim? (Yeni Parent)
+      // Eğer kök dizine taşındıysa parent null olur.
+      // Eğer bir alt menüye taşındıysa parent o menünün ID'si olur.
+      let newParentId: number | null = null;
 
-      const itemToMove = activeContainer[oldIndex];
-      activeContainer.splice(oldIndex, 1);
-      activeContainer.splice(newIndex, 0, itemToMove);
+      // Bu container kimin çocuğu?
+      const parentNode = findParentNode(over.id, newTree);
+      // DİKKAT: findParentNode, 'over.id' elemanının parentını bulur.
+      // Eğer overContainer kök ise parentNode null döner.
+      // Eğer overContainer bir alt menü ise, parentNode o alt menünün sahibi olur.
 
-      setMenuItems(newTree); // UI Güncelle
+      if (parentNode) {
+        newParentId = parentNode.id;
+      } else {
+        // Eğer parentNode null ise, ya köke taşındı ya da biz kökteyiz.
+        // overContainer === newTree ise kökteyizdir.
+        // Bu kontrolü basitleştirmek için backend'e sadece sıralamayı değil, parentId'yi de göndereceğiz.
+        // Ancak array referansından parent'ı bulmak zor.
+        // ALTERNATİF YÖNTEM:
+        // overContainer, newTree'nin kendisi mi?
+        // (JSON parse referansları bozduğu için içerik kontrolü gerekebilir ama
+        // en kolayı movedItem'ı yeni yere koyup sonra hesaplamaktır).
+      }
 
-      // Backend için sıralama verisi
-      const orderPayload = activeContainer.map((item: MenuItem, index: number) => ({
-        id: item.id,
-        sortOrder: index + 1,
-      }));
+      // Öğeyi yeni yerine koy
+      let newIndex = overIndex;
+      // Eğer farklı konteynıra geldiyse ve aşağıya bırakıyorsak index kayabilir
+      if (activeContainer !== overContainer) {
+        // Basit mantık: Üzerine gelinenin yerine koy
+        overContainer.splice(overIndex, 0, movedItem);
+      } else {
+        // Aynı konteyner ise arrayMove mantığı (splice ile yaptık zaten)
+        overContainer.splice(overIndex, 0, movedItem);
+      }
 
-      // Kaydet
-      menuService.updateOrder(orderPayload).catch((err) => {
-        console.error("Sıralama hatası", err);
-        alert("Sıralama kaydedilemedi!");
+      // --- BACKEND İÇİN VERİ HAZIRLIĞI ---
+      // Tüm ağacı tarayıp, değişen herkesin yeni parentId ve sortOrder'ını güncellememiz lazım.
+      // Ama sadece etkilenen konteynerleri güncellemek daha performanslıdır.
+
+      // Bizim updateOrder metodumuz düz liste alıyordu.
+      // Şimdi hem activeContainer hem overContainer'daki elemanları güncellemeliyiz.
+
+      // 1. Yeni Parent ID'yi Bul (En Kritik Kısım)
+      // movedItem artık overContainer içinde. overContainer'ın sahibi kim?
+      // Tüm ağacı tekrar tarayarak movedItem'ın yeni parentını bulabiliriz.
+      const foundNewParent = findParentNode(movedItem.id, newTree);
+      newParentId = foundNewParent ? foundNewParent.id : null;
+
+      movedItem.parentId = newParentId; // Obje üzerindeki veriyi güncelle
+
+      // UI Güncelle
+      setMenuItems(newTree);
+
+      // Backend'e Kaydet (Batch Update)
+      // Tüm ağacı düzleştirip (flatten) her şeyin son halini göndermek en güvenlisidir.
+      // Çünkü iç içe taşımalarda indexler ve parentlar karışabilir.
+      const flatUpdates: any[] = [];
+
+      const flattenAndCollect = (nodes: MenuItem[], pid: number | null) => {
+        nodes.forEach((node, idx) => {
+          flatUpdates.push({
+            id: node.id,
+            sortOrder: idx + 1,
+            parentId: pid,
+          });
+          if (node.children) flattenAndCollect(node.children, node.id);
+        });
+      };
+
+      flattenAndCollect(newTree, null);
+
+      // Backend Servisini Çağır (Bu metod zaten vardı, sadece parentId desteği eklemeliyiz backend'e)
+      // Backend'deki updateOrder metodu şu an sadece sortOrder güncelliyor olabilir.
+      // Onu hem sortOrder hem parentId güncelleyecek şekilde değiştirmeliyiz.
+      menuService.updateOrder(flatUpdates).catch((err) => {
+        console.error("Taşıma hatası", err);
         fetchData(); // Hata varsa geri al
       });
     }

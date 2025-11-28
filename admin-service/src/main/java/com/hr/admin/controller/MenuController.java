@@ -40,13 +40,36 @@ public class MenuController {
         return repository.save(item);
     }
 
-    @PutMapping("/{id}")
+@PutMapping("/{id}")
+    @Transactional // İlişki güncellemeleri için Transactional önerilir
     public MenuItem update(@PathVariable Long id, @RequestBody MenuItemDTO dto) {
-        MenuItem item = repository.findById(id).orElseThrow();
+        // 1. Düzenlenen menüyü bul
+        MenuItem item = repository.findById(id)
+                .orElseThrow(() -> new RuntimeException("Menü bulunamadı id: " + id));
+
+        // 2. Temel alanları güncelle
         item.setTitle(dto.getTitle());
         item.setUrl(dto.getUrl());
-        item.setSortOrder(dto.getSortOrder());
         item.setRoles(dto.getRoles());
+        // SortOrder'ı formdan güncellemek istemeyebiliriz (DnD bozulmasın diye), 
+        // ama istersen: item.setSortOrder(dto.getSortOrder());
+
+        // 3. PARENT İLİŞKİSİNİ GÜNCELLE (KRİTİK KISIM)
+        if (dto.getParentId() != null) {
+            // Kendisini parent yapmaya çalışırsa engelle
+            if (item.getId().equals(dto.getParentId())) {
+                throw new RuntimeException("Bir menü kendisinin alt menüsü olamaz!");
+            }
+
+            MenuItem newParent = repository.findById(dto.getParentId())
+                    .orElseThrow(() -> new RuntimeException("Seçilen üst menü bulunamadı."));
+            
+            item.setParent(newParent); // Yeni babasına bağla
+        } else {
+            // Parent ID null geldiyse, bu artık bir KÖK (Root) menüdür.
+            item.setParent(null); 
+        }
+
         return repository.save(item);
     }
 
@@ -72,13 +95,23 @@ public class MenuController {
         return dto;
     }
 
-    @PutMapping("/update-order")
-    @Transactional 
+@PutMapping("/update-order")
+    @Transactional
     public void updateOrder(@RequestBody List<MenuItemDTO> items) {
         for (MenuItemDTO dto : items) {
             MenuItem item = repository.findById(dto.getId()).orElse(null);
             if (item != null) {
+                // 1. Sıralamayı Güncelle
                 item.setSortOrder(dto.getSortOrder());
+                
+                // 2. Parent'ı Güncelle (Kırılım Değişikliği)
+                if (dto.getParentId() != null) {
+                    MenuItem parent = repository.findById(dto.getParentId()).orElse(null);
+                    item.setParent(parent);
+                } else {
+                    item.setParent(null); // Köke taşındıysa
+                }
+                
                 repository.save(item);
             }
         }
