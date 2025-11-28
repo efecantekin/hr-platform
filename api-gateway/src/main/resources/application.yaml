@@ -4,7 +4,7 @@ server:
 spring:
   application:
     name: api-gateway
-  
+
   cloud:
     gateway:
       routes:
@@ -38,13 +38,21 @@ spring:
             - Path=/api/documents/**
           filters:
             - AuthenticationFilter
-          
+
           # 5. Admin Service (YENİ)
         - id: admin-service
           uri: ${ADMIN_URI:http://localhost:8085}
           predicates:
             # Menü istekleri artık buraya
             - Path=/api/menus/**, /api/admin/**, /api/screens/**
+          filters:
+            - AuthenticationFilter
+
+        # 6. Recruitment Service
+        - id: recruitment-service
+          uri: ${RECRUITMENT_URI:http://localhost:8086}
+          predicates:
+            - Path=/api/candidates/**
           filters:
             - AuthenticationFilter
 

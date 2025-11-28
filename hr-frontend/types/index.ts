@@ -91,3 +91,19 @@ export interface JobTitle {
   id: number;
   title: string;
 }
+
+export interface Candidate {
+  id: number;
+  firstName: string;
+  lastName: string;
+  email: string;
+  phone: string;
+  technologies: string;
+  experienceYears: number;
+  previousCompanies: string;
+  university: string;
+  department: string;
+  referenceType: string; // INTERNAL, EXTERNAL
+  referenceName: string;
+  status: string;
+}

@@ -1,0 +1,23 @@
+server:
+  port: 8086 # Diğer servislerle çakışmaması için yeni port
+
+spring:
+  application:
+    name: recruitment-service
+
+  datasource:
+    # Varsayılan olarak localhost (VS Code'da çalıştırırsan)
+    # Docker içinde çalışınca environment variable bunu ezecek.
+    url: jdbc:postgresql://localhost:5432/recruitment_db
+    username: hr_admin
+    password: hr_password
+    driver-class-name: org.postgresql.Driver
+
+  jpa:
+    database-platform: org.hibernate.dialect.PostgreSQLDialect
+    hibernate:
+      ddl-auto: update # Tabloları Entity'e göre otomatik oluşturur
+    show-sql: true # SQL sorgularını logda görmek için
+    properties:
+      hibernate:
+        format_sql: true
