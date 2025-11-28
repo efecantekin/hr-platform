@@ -4,10 +4,9 @@ import com.hr.employee.dto.HierarchyAssignmentRequest;
 import com.hr.employee.entity.Employee;
 import com.hr.employee.service.EmployeeService;
 
+import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
-
 import org.springframework.web.bind.annotation.*;
-
 import java.util.List;
 
 @RestController
@@ -45,5 +44,10 @@ public class EmployeeController {
     @GetMapping("/{id}")
     public Employee getEmployeeById(@PathVariable Long id) {
         return employeeService.getEmployeeById(id);
+    }
+
+    @PutMapping("/{id}")
+    public Employee updateEmployee(@PathVariable Long id, @RequestBody Employee employee) {
+        return employeeService.updateEmployee(id, employee);
     }
 }

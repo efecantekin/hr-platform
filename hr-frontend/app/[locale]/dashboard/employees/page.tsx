@@ -155,6 +155,19 @@ export default function EmployeesPage() {
       accessorKey: "email",
       className: "text-gray-500",
     },
+    {
+      header: "",
+      className: "text-right",
+      cell: (emp) => (
+        <Button
+          size="sm"
+          variant="outline"
+          onClick={() => router.push(`/dashboard/employees/${emp.id}`)}
+        >
+          Detay &rArr;
+        </Button>
+      ),
+    },
   ];
 
   return (

@@ -81,4 +81,28 @@ public class EmployeeService {
     public List<Employee> getTeamMembers(Long managerId) {
         return repository.findByManagerId(managerId);
     }
+
+    // --- GÜNCELLEME METODU (YENİ) ---
+    @Transactional
+    public Employee updateEmployee(Long id, Employee details) {
+        // 1. Önce veritabanındaki eski kaydı bul (Yoksa hata ver)
+        Employee existingEmployee = repository.findById(id)
+                .orElseThrow(() -> new RuntimeException("Personel bulunamadı id: " + id));
+
+        // 2. Gelen yeni bilgilerle eskiyi güncelle
+        existingEmployee.setFirstName(details.getFirstName());
+        existingEmployee.setLastName(details.getLastName());
+        existingEmployee.setEmail(details.getEmail());
+        existingEmployee.setDepartment(details.getDepartment());
+        existingEmployee.setJobTitle(details.getJobTitle());
+        existingEmployee.setPosition(details.getPosition());
+        existingEmployee.setPhoneNumber(details.getPhoneNumber());
+        existingEmployee.setHireDate(details.getHireDate());
+        
+        // (ManagerID ve TeamID gibi kritik alanları burada değiştirmek istemeyebilirsin,
+        // onlar için ayrı hiyerarşi metodları var. Ama istersen onları da ekleyebilirsin.)
+
+        // 3. Kaydet ve geri döndür
+        return repository.save(existingEmployee);
+    }
 }
