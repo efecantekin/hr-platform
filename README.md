@@ -102,7 +102,7 @@ Projenin tamamını (Frontend + 6 Backend Servisi + Veritabanları) ayağa kald�
 
 1. Projeyi Klonlayın
 ```bash
-git clone [https://github.com/KULLANICI_ADINIZ/hr-platform.git](https://github.com/KULLANICI_ADINIZ/hr-platform.git)
+git clone [https://github.com/efecantekin/hr-platform.git](https://github.com/efecantekin/hr-platform.git)
 cd hr-platform
 ```
 
