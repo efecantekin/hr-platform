@@ -56,6 +56,14 @@ spring:
           filters:
             - AuthenticationFilter
 
+        # 7. Performance Service
+        - id: performance-service
+          uri: ${PERFORMANCE_URI:http://localhost:8087}
+          predicates:
+            - Path=/api/performance/**
+          filters:
+            - AuthenticationFilter
+
 # Actuator ayarları (ayrı bir blok olmalı)
 management:
   endpoints:

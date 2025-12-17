@@ -4,3 +4,4 @@ CREATE DATABASE leave_db;
 CREATE DATABASE doc_db;
 CREATE DATABASE admin_db;
 CREATE DATABASE recruitment_db;
+CREATE DATABASE performance_db;

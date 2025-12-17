@@ -1,0 +1,18 @@
+server:
+  port: 8087
+
+spring:
+  application:
+    name: performance-service
+
+  datasource:
+    url: jdbc:postgresql://postgres-db:5432/performance_db
+    username: hr_admin
+    password: hr_password
+    driver-class-name: org.postgresql.Driver
+
+  jpa:
+    database-platform: org.hibernate.dialect.PostgreSQLDialect
+    hibernate:
+      ddl-auto: update
+    show-sql: true
