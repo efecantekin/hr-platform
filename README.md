@@ -126,8 +126,11 @@ docker-compose up --build -d
 
 ### 📱 Arayüzden Görüntüler
 
-![Menu](https://i.imgur.com/Jxb7UYe.png)
+![Dashboard](https://i.imgur.com/MH5Nvjx.png)
 
+![Menu Management](https://i.imgur.com/Jxb7UYe.png)
+
+![Performance](https://i.imgur.com/qbNYZVD.png)
 ---
 
 ### 🔮 Gelecek Planları (Roadmap)
