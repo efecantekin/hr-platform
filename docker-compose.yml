@@ -93,6 +93,7 @@ services:
       - DOC_URI=http://document-service:8084
       - ADMIN_URI=http://admin-service:8085
       - RECRUITMENT_URI=http://recruitment-service:8086
+      - PERFORMANCE_URI=http://performance-service:8087 # <--- YENİ EKLENDİ
     depends_on:
       - auth-service
       - employee-service
@@ -133,6 +134,20 @@ services:
       - "8086:8086" # Port 8086 olsun
     environment:
       - SPRING_DATASOURCE_URL=jdbc:postgresql://postgres-db:5432/recruitment_db
+    depends_on:
+      postgres-db:
+        condition: service_healthy
+    networks:
+      - hr-network
+
+  # 89. PERFORMANCE SERVICE (YENİ)
+  performance-service:
+    build: ./performance-service
+    container_name: hr-performance
+    ports:
+      - "8087:8087"
+    environment:
+      - SPRING_DATASOURCE_URL=jdbc:postgresql://postgres-db:5432/performance_db
     depends_on:
       postgres-db:
         condition: service_healthy

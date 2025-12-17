@@ -107,3 +107,56 @@ export interface Candidate {
   referenceName: string;
   status: string;
 }
+
+export type QuestionType = "TEXT" | "RATING" | "MULTIPLE_CHOICE";
+
+export interface Question {
+  id?: number; // Backend ID'si (kaydedilince gelir)
+  localId?: string; // Frontend'de DnD için geçici ID
+  text: string;
+  type: QuestionType;
+  options?: string; // "İyi,Kötü,Orta" gibi
+  orderIndex: number;
+}
+
+export interface SurveyTemplate {
+  id?: number;
+  title: string;
+  description: string;
+  questions: Question[];
+}
+
+export interface PerformanceReview {
+  id: number;
+  templateId: number;
+  templateTitle?: string;
+  employeeId: number;
+  employeeName?: string; // UI için
+  reviewerId: number;
+  reviewerName?: string; // UI için
+  status: "PENDING" | "COMPLETED";
+  dueDate?: string;
+  reviewType: "SELF" | "MANAGER" | "SUBORDINATE" | "PEER"; // Değerlendirme Tipi
+  period: string; // Dönem (Örn: 2024-Q1)
+}
+
+export interface ReviewResponse {
+  questionId: number;
+  questionText?: string;
+  answerValue: string;
+}
+
+export interface Question {
+  id?: number;
+  text: string;
+  type: "TEXT" | "RATING" | "MULTIPLE_CHOICE";
+  options?: string; // Virgülle ayrılmış seçenekler
+  orderIndex: number;
+}
+
+export interface SurveyTemplate {
+  id?: number;
+  title: string;
+  description: string;
+  questions: Question[];
+}
