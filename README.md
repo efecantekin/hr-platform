@@ -126,7 +126,7 @@ docker-compose up --build -d
 
 ### 📱 Arayüzden Görüntüler
 
-[Imgur]([https://imgur.com/Jxb7UYe](https://i.imgur.com/Jxb7UYe.png))
+![Menu](https://i.imgur.com/Jxb7UYe.png)
 
 ---
 
