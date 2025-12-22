@@ -16,56 +16,56 @@ public class EmployeeService {
     private final EmployeeRepository repository;
     private final AuthClient authClient;
 
-    
     public EmployeeService(EmployeeRepository repository, AuthClient authClient) {
         this.repository = repository;
         this.authClient = authClient;
     }
 
     @Transactional
-    public Employee createEmployee(Employee employee) {        
+    public Employee createEmployee(Employee employee) {
         Employee savedEmployee = repository.save(employee);
-
         try {
             RegisterRequest registerRequest = new RegisterRequest(
-                savedEmployee.getEmail(),
+                savedEmployee.getEmail(), 
                 "123456", 
                 "USER",
                 savedEmployee.getId()
             );
-            
             authClient.registerUser(registerRequest);
-            System.out.println("✅ Otomatik kullanıcı hesabı oluşturuldu: " + savedEmployee.getEmail());
-
-        } catch (Exception e) {           
-            System.err.println("⚠️ Kullanıcı hesabı oluşturulamadı: " + e.getMessage());
+        } catch (Exception e) {
+            System.err.println("Kullanıcı hesabı oluşturulamadı: " + e.getMessage());
         }
-
         return savedEmployee;
     }
 
-    public List<Employee> getAllEmployees() {
-        return repository.findAll();
-    }
-  
-    public Employee getEmployeeById(Long id) {
-        return repository.findById(id).orElseThrow(() -> new RuntimeException("Çalışan bulunamadı"));
-    }
-    
+    // --- HİYERARŞİ ATAMA ve ROL GÜNCELLEME ---
     @Transactional
-    public Employee assignHierarchy(HierarchyAssignmentRequest request) {       
-        
+    public Employee assignHierarchy(HierarchyAssignmentRequest request) {
+        // 1. Önce Yöneticiyi Bul (Her durumda lazım)
+        Employee manager = repository.findById(request.getManagerId())
+                                     .orElseThrow(() -> new RuntimeException("Yönetici bulunamadı."));
+
+        // 2. Yöneticinin Pozisyonunu Güncelle (Eğer yeni bilgi geldiyse)
         if (request.getManagerPosition() != null && !request.getManagerPosition().trim().isEmpty()) {
-            Employee manager = repository.findById(request.getManagerId())
-                                        .orElseThrow(() -> new RuntimeException("Yönetici bulunamadı."));
-            
             manager.setPosition(request.getManagerPosition());
             repository.save(manager);
         }
-               
+        
+        // 3. Yöneticinin Rolünü "MANAGER" Olarak Güncelle (HER DURUMDA ÇALIŞMALI)
+        // Pozisyon değişse de değişmese de, altına adam aldıysa yöneticidir.
+        try {
+            System.out.println("Yönetici rolü güncelleniyor: EmployeeID=" + manager.getId());
+            authClient.updateUserRole(manager.getId(), "MANAGER");
+            System.out.println("Yönetici rolü başarıyla güncellendi.");
+        } catch (Exception e) {
+            System.err.println("DİKKAT: Yönetici rolü güncellenemedi! Hata: " + e.getMessage());
+            // Hata fırlatmıyoruz, çünkü atama işlemi rol güncellemesinden daha kritik.
+        }
+
+        // 4. Ast'ı Yöneticiye Bağla
         Employee subordinate = repository.findById(request.getSubordinateId())
-                                        .orElseThrow(() -> new RuntimeException("Çalışan bulunamadı."));
-               
+                                         .orElseThrow(() -> new RuntimeException("Çalışan bulunamadı."));
+        
         if (request.getSubordinateId().equals(request.getManagerId())) {
             throw new RuntimeException("Kişi kendi kendini atayamaz.");
         }
@@ -74,22 +74,14 @@ public class EmployeeService {
         return repository.save(subordinate);
     }
     
-    public List<Employee> getRootEmployees() {
-        return repository.findByManagerIdIsNull();
-    }
- 
-    public List<Employee> getTeamMembers(Long managerId) {
-        return repository.findByManagerId(managerId);
-    }
-
-    // --- GÜNCELLEME METODU (YENİ) ---
+    public List<Employee> getAllEmployees() { return repository.findAll(); }
+    public Employee getEmployeeById(Long id) { return repository.findById(id).orElseThrow(() -> new RuntimeException("Çalışan bulunamadı")); }
+    public List<Employee> getRootEmployees() { return repository.findByManagerIdIsNull(); }
+    public List<Employee> getTeamMembers(Long managerId) { return repository.findByManagerId(managerId); }
+    
     @Transactional
     public Employee updateEmployee(Long id, Employee details) {
-        // 1. Önce veritabanındaki eski kaydı bul (Yoksa hata ver)
-        Employee existingEmployee = repository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Personel bulunamadı id: " + id));
-
-        // 2. Gelen yeni bilgilerle eskiyi güncelle
+        Employee existingEmployee = repository.findById(id).orElseThrow(() -> new RuntimeException("Personel bulunamadı id: " + id));
         existingEmployee.setFirstName(details.getFirstName());
         existingEmployee.setLastName(details.getLastName());
         existingEmployee.setEmail(details.getEmail());
@@ -98,11 +90,6 @@ public class EmployeeService {
         existingEmployee.setPosition(details.getPosition());
         existingEmployee.setPhoneNumber(details.getPhoneNumber());
         existingEmployee.setHireDate(details.getHireDate());
-        
-        // (ManagerID ve TeamID gibi kritik alanları burada değiştirmek istemeyebilirsin,
-        // onlar için ayrı hiyerarşi metodları var. Ama istersen onları da ekleyebilirsin.)
-
-        // 3. Kaydet ve geri döndür
         return repository.save(existingEmployee);
     }
 }

@@ -59,6 +59,8 @@ services:
       - "8083:8083"
     environment:
       - SPRING_DATASOURCE_URL=jdbc:postgresql://postgres-db:5432/leave_db
+      - EMPLOYEE_URI=http://employee-service:8081
+      - NOTIFICATION_URI=http://notification-service:8088
     depends_on:
       postgres-db:
         condition: service_healthy
@@ -79,26 +81,30 @@ services:
     networks:
       - hr-network
 
-  # 6. API GATEWAY (Orkestra Şefi)
+    # 10. API GATEWAY
   api-gateway:
     build: ./api-gateway
     container_name: hr-gateway
     ports:
       - "8080:8080"
     environment:
-      # Gateway'e diğer servislerin Docker içindeki adreslerini söylüyoruz
       - EMPLOYEE_URI=http://employee-service:8081
       - AUTH_URI=http://auth-service:8082
       - LEAVE_URI=http://leave-service:8083
       - DOC_URI=http://document-service:8084
       - ADMIN_URI=http://admin-service:8085
       - RECRUITMENT_URI=http://recruitment-service:8086
-      - PERFORMANCE_URI=http://performance-service:8087 # <--- YENİ EKLENDİ
+      - PERFORMANCE_URI=http://performance-service:8087
+      - NOTIFICATION_URI=http://notification-service:8088
     depends_on:
       - auth-service
       - employee-service
       - leave-service
       - document-service
+      - admin-service
+      - recruitment-service
+      - performance-service
+      - notification-service
     networks:
       - hr-network
 
@@ -106,7 +112,7 @@ services:
     build: ./admin-service
     container_name: hr-admin
     ports:
-      - "8085:8085" # Yeni port
+      - "8085:8085"
     environment:
       - SPRING_DATASOURCE_URL=jdbc:postgresql://postgres-db:5432/admin_db
     depends_on:
@@ -115,23 +121,12 @@ services:
     networks:
       - hr-network
 
-  # 7. FRONTEND (Next.js)
-  hr-frontend:
-    build: ./hr-frontend
-    container_name: hr-frontend-app
-    ports:
-      - "3000:3000"
-    networks:
-      - hr-network
-    # Not: Frontend tarayıcıda çalıştığı için API'ye yine localhost üzerinden erişecek.
-    # O yüzden ekstra environment ayarına gerek yok.
-
-  # 8. RECRUITMENT SERVICE (YENİ)
+  # 7. RECRUITMENT SERVICE
   recruitment-service:
     build: ./recruitment-service
     container_name: hr-recruitment
     ports:
-      - "8086:8086" # Port 8086 olsun
+      - "8086:8086"
     environment:
       - SPRING_DATASOURCE_URL=jdbc:postgresql://postgres-db:5432/recruitment_db
     depends_on:
@@ -140,7 +135,7 @@ services:
     networks:
       - hr-network
 
-  # 89. PERFORMANCE SERVICE (YENİ)
+  # 8. PERFORMANCE SERVICE
   performance-service:
     build: ./performance-service
     container_name: hr-performance
@@ -151,6 +146,29 @@ services:
     depends_on:
       postgres-db:
         condition: service_healthy
+    networks:
+      - hr-network
+
+  # 9. NOTIFICATION SERVICE
+  notification-service:
+    build: ./notification-service
+    container_name: hr-notification
+    ports:
+      - "8088:8088"
+    environment:
+      - SPRING_DATASOURCE_URL=jdbc:postgresql://postgres-db:5432/notification_db
+    depends_on:
+      postgres-db:
+        condition: service_healthy
+    networks:
+      - hr-network
+
+  # 11. FRONTEND
+  hr-frontend:
+    build: ./hr-frontend
+    container_name: hr-frontend-app
+    ports:
+      - "3000:3000"
     networks:
       - hr-network
 

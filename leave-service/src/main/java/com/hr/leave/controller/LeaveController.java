@@ -25,10 +25,11 @@ public class LeaveController {
         return service.getLeavesByEmployee(employeeId);
     }
 
-    @GetMapping("/pending")
-    public List<LeaveRequest> getPendingLeaves() {
-        return service.getLeavesByStatus("PENDING");
+    @GetMapping("/pending/{managerId}")
+    public List<LeaveRequest> getPendingLeaves(@PathVariable Long managerId) {
+        return service.getPendingLeavesForManager(managerId);
     }
+
 
     @PutMapping("/{id}/status")
     public LeaveRequest updateStatus(@PathVariable Long id, @RequestParam String status) {
