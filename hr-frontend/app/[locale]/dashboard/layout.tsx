@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import Sidebar from "../../../components/ui/Sidebar"; // Sidebar'ı import et
 import NotificationDropdown from "../../../components/ui/NotificationDropdown";
+import Image from "next/image"; // Image bileşeni eklendi
 
 export default function DashboardLayout({ children }: { children: React.ReactNode }) {
   const router = useRouter();
@@ -33,15 +34,24 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
     <div className="min-h-screen bg-gray-100 flex">
       {/* --- SOL SIDEBAR (MENÜ) --- */}
       <aside className="w-64 bg-white border-r border-gray-200 hidden md:flex flex-col fixed h-full z-10">
-        {/* Logo Alanı */}
+        {/* LOGO ALANI (GÜNCELLENDİ) */}
         <div
-          className="h-16 flex items-center px-6 border-b border-gray-200 cursor-pointer"
+          className="h-16 flex items-center px-6 border-b border-gray-200 cursor-pointer hover:bg-gray-50 transition"
           onClick={() => router.push("/dashboard")}
         >
-          <div className="w-8 h-8 bg-blue-600 rounded-lg flex items-center justify-center text-white font-bold text-xl mr-3">
-            HR
+          {/* Logo Görseli */}
+          <div className="relative w-40 h-40 mr-3">
+            <Image
+              src="/peepl-small.png" // public/logo.png dosyasını okur
+              alt="HR Platform Logo"
+              fill
+              className="object-contain" // Görsel oranını korur
+            />
           </div>
-          <span className="text-xl font-bold text-gray-800 tracking-tight">Platform</span>
+
+          {/* <span className="text-xl font-bold text-gray-800 tracking-tight">
+            HR <span className="text-blue-600">Platform</span>
+          </span> */}
         </div>
 
         {/* Dinamik Menü Bileşeni */}

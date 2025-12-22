@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import { useTranslations } from "next-intl";
 import LanguageSwitcher from "../../components/ui/LanguageSwitcher";
 import { authService } from "../../services/authService"; // Servis importu
+import Image from "next/image";
 
 export default function LoginPage() {
   const router = useRouter();
@@ -49,7 +50,18 @@ export default function LoginPage() {
         <LanguageSwitcher />
       </div>
       <div className="w-full max-w-md bg-white p-8 rounded-lg shadow-md">
-        <h2 className="text-2xl font-bold text-center text-gray-800 mb-6">{t("title")}</h2>
+        {/* LOGO ALANI (METİN YERİNE GÖRSEL) */}
+        <div className="flex justify-center mb-6">
+          <div className="relative w-48 h-16">
+            <Image
+              src="/peepl-small.png"
+              alt="HR Platform Logo"
+              fill
+              className="object-contain"
+              priority
+            />
+          </div>
+        </div>
 
         {error && (
           <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded mb-4 text-sm">
