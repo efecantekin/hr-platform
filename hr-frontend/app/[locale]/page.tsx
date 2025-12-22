@@ -31,7 +31,7 @@ export default function LoginPage() {
 
         // YENİ: Rolü ve ID'yi de kaydet!
         localStorage.setItem("role", data.role);
-        localStorage.setItem("employeeId", data.employeeId.toString());
+        localStorage.setItem("employeeId", data.employeeId?.toString() || "");
 
         router.push("/dashboard");
       }

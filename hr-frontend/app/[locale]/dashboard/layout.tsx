@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import Sidebar from "../../../components/ui/Sidebar"; // Sidebar'ı import et
+import NotificationDropdown from "../../../components/ui/NotificationDropdown";
 
 export default function DashboardLayout({ children }: { children: React.ReactNode }) {
   const router = useRouter();
@@ -59,6 +60,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
         {/* Üst Header (Sadece Profil ve Çıkış) */}
         <header className="bg-white h-16 border-b border-gray-200 flex items-center justify-end px-8 shadow-sm sticky top-0 z-20">
           <div className="flex items-center gap-4">
+            <NotificationDropdown />
             <div className="text-right">
               <p className="text-sm font-bold text-gray-800">{username}</p>
               <span className="text-xs px-2 py-0.5 rounded bg-blue-50 text-blue-600 font-medium border border-blue-100">

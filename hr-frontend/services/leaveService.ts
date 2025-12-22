@@ -12,8 +12,8 @@ export const leaveService = {
     return response.data;
   },
 
-  getPending: async () => {
-    const response = await api.get<LeaveRequest[]>("/leaves/pending");
+  getPending: async (managerId: number) => {
+    const response = await api.get<LeaveRequest[]>(`/leaves/pending/${managerId}`);
     return response.data;
   },
 

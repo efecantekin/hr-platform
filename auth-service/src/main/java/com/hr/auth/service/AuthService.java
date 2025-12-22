@@ -38,4 +38,17 @@ public class AuthService {
     public void validateToken(String token) {
         jwtService.validateToken(token);
     }
+
+    public void updateUserRole(Long employeeId, String newRole) {
+        System.out.println("BURADAYIM");
+        User user = repository.findByEmployeeId(employeeId)
+                .orElseThrow(() -> new RuntimeException("Kullanıcı bulunamadı (Employee ID: " + employeeId + ")"));
+        
+        // Sadece rol farklıysa güncelle (Gereksiz yazma işlemini önle)
+        if (!newRole.equals(user.getRole())) {
+            user.setRole(newRole);
+            repository.save(user);
+            System.out.println("Kullanıcı rolü güncellendi: " + user.getUsername() + " -> " + newRole);
+        }
+    }
 }

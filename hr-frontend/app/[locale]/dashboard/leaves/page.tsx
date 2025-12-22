@@ -70,8 +70,11 @@ export default function LeavesView() {
   const fetchPendingLeaves = async () => {
     setLeavesLoading(true);
     try {
-      const data = await leaveService.getPending();
-      setLeaves(data); // Ana tabloyu güncelle
+      const managerId = Number(localStorage.getItem("employeeId"));
+      if (!managerId) return;
+
+      const data = await leaveService.getPending(managerId);
+      setLeaves(data);
     } catch (e) {
       console.error(e);
     } finally {
@@ -118,8 +121,6 @@ export default function LeavesView() {
     await leaveService.updateStatus(id, status);
     fetchPendingLeaves(); // Listeyi yenile
   };
-
-  // --- TABLO KOLONLARI ---
 
   // 1. Standart İzin Kolonları (Benim ve Onay Bekleyenler için)
   const columns: Column<LeaveRequest>[] = [
