@@ -2,25 +2,25 @@ version: "3.8"
 
 services:
   # 1. VERİTABANI
-  postgres-db:
-    image: postgres:15-alpine
-    container_name: hr-postgres
-    environment:
-      - POSTGRES_USER=hr_admin
-      - POSTGRES_PASSWORD=hr_password
-      - POSTGRES_DB=hr_main_db
-    ports:
-      - "5432:5432"
-    volumes:
-      - ./postgres-data:/var/lib/postgresql/data
-      - ./init-scripts:/docker-entrypoint-initdb.d
-    networks:
-      - hr-network
-    healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U hr_admin -d hr_main_db"]
-      interval: 10s
-      timeout: 5s
-      retries: 5
+  # postgres-db:
+  #   image: postgres:15-alpine
+  #   container_name: hr-postgres
+  #   environment:
+  #     - POSTGRES_USER=hr_admin
+  #     - POSTGRES_PASSWORD=hr_password
+  #     - POSTGRES_DB=hr_main_db
+  #   ports:
+  #     - "5432:5432"
+  #   volumes:
+  #     - ./postgres-data:/var/lib/postgresql/data
+  #     - ./init-scripts:/docker-entrypoint-initdb.d
+  #   networks:
+  #     - hr-network
+  #   healthcheck:
+  #     test: ["CMD-SHELL", "pg_isready -U hr_admin -d hr_main_db"]
+  #     interval: 10s
+  #     timeout: 5s
+  #     retries: 5
 
   # 2. AUTH SERVICE
   auth-service:
@@ -29,10 +29,10 @@ services:
     ports:
       - "8082:8082"
     environment:
-      - SPRING_DATASOURCE_URL=jdbc:postgresql://postgres-db:5432/auth_db
-    depends_on:
-      postgres-db:
-        condition: service_healthy
+      - SPRING_DATASOURCE_URL=jdbc:postgresql://ep-floral-wildflower-ag6dsgcp-pooler.c-2.eu-central-1.aws.neon.tech/auth_db?sslmode=require&channel_binding=require
+      - SPRING_DATASOURCE_USERNAME=neondb_owner # Neon'dan aldığınız kullanıcı adı
+      - SPRING_DATASOURCE_PASSWORD=npg_LqFNt8fcR6De
+
     networks:
       - hr-network
 
@@ -43,11 +43,11 @@ services:
     ports:
       - "8081:8081"
     environment:
-      - SPRING_DATASOURCE_URL=jdbc:postgresql://postgres-db:5432/employee_db
+      - SPRING_DATASOURCE_URL=jdbc:postgresql://ep-floral-wildflower-ag6dsgcp-pooler.c-2.eu-central-1.aws.neon.tech/employee_db?sslmode=require&channel_binding=require
+      - SPRING_DATASOURCE_USERNAME=neondb_owner # Neon'dan aldığınız kullanıcı adı
+      - SPRING_DATASOURCE_PASSWORD=npg_LqFNt8fcR6De
       - AUTH_URI=http://auth-service:8082
-    depends_on:
-      postgres-db:
-        condition: service_healthy
+
     networks:
       - hr-network
 
@@ -58,12 +58,10 @@ services:
     ports:
       - "8083:8083"
     environment:
-      - SPRING_DATASOURCE_URL=jdbc:postgresql://postgres-db:5432/leave_db
-      - EMPLOYEE_URI=http://employee-service:8081
-      - NOTIFICATION_URI=http://notification-service:8088
-    depends_on:
-      postgres-db:
-        condition: service_healthy
+      - SPRING_DATASOURCE_URL=jdbc:postgresql://ep-floral-wildflower-ag6dsgcp-pooler.c-2.eu-central-1.aws.neon.tech/leave_db?sslmode=require&channel_binding=require
+      - SPRING_DATASOURCE_USERNAME=neondb_owner # Neon'dan aldığınız kullanıcı adı
+      - SPRING_DATASOURCE_PASSWORD=npg_LqFNt8fcR6De
+
     networks:
       - hr-network
 
@@ -74,10 +72,10 @@ services:
     ports:
       - "8084:8084"
     environment:
-      - SPRING_DATASOURCE_URL=jdbc:postgresql://postgres-db:5432/doc_db
-    depends_on:
-      postgres-db:
-        condition: service_healthy
+      - SPRING_DATASOURCE_URL=jdbc:postgresql://ep-floral-wildflower-ag6dsgcp-pooler.c-2.eu-central-1.aws.neon.tech/doc_db?sslmode=require&channel_binding=require
+      - SPRING_DATASOURCE_USERNAME=neondb_owner # Neon'dan aldığınız kullanıcı adı
+      - SPRING_DATASOURCE_PASSWORD=npg_LqFNt8fcR6De
+
     networks:
       - hr-network
 
@@ -114,10 +112,10 @@ services:
     ports:
       - "8085:8085"
     environment:
-      - SPRING_DATASOURCE_URL=jdbc:postgresql://postgres-db:5432/admin_db
-    depends_on:
-      postgres-db:
-        condition: service_healthy
+      - SPRING_DATASOURCE_URL=jdbc:postgresql://ep-floral-wildflower-ag6dsgcp-pooler.c-2.eu-central-1.aws.neon.tech/admin_db?sslmode=require&channel_binding=require
+      - SPRING_DATASOURCE_USERNAME=neondb_owner # Neon'dan aldığınız kullanıcı adı
+      - SPRING_DATASOURCE_PASSWORD=npg_LqFNt8fcR6De
+
     networks:
       - hr-network
 
@@ -128,10 +126,10 @@ services:
     ports:
       - "8086:8086"
     environment:
-      - SPRING_DATASOURCE_URL=jdbc:postgresql://postgres-db:5432/recruitment_db
-    depends_on:
-      postgres-db:
-        condition: service_healthy
+      - SPRING_DATASOURCE_URL=jdbc:postgresql://ep-floral-wildflower-ag6dsgcp-pooler.c-2.eu-central-1.aws.neon.tech/recruitment_db?sslmode=require&channel_binding=require
+      - SPRING_DATASOURCE_USERNAME=neondb_owner # Neon'dan aldığınız kullanıcı adı
+      - SPRING_DATASOURCE_PASSWORD=npg_LqFNt8fcR6De
+
     networks:
       - hr-network
 
@@ -142,10 +140,10 @@ services:
     ports:
       - "8087:8087"
     environment:
-      - SPRING_DATASOURCE_URL=jdbc:postgresql://postgres-db:5432/performance_db
-    depends_on:
-      postgres-db:
-        condition: service_healthy
+      - SPRING_DATASOURCE_URL=jdbc:postgresql://ep-floral-wildflower-ag6dsgcp-pooler.c-2.eu-central-1.aws.neon.tech/performance_db?sslmode=require&channel_binding=require
+      - SPRING_DATASOURCE_USERNAME=neondb_owner # Neon'dan aldığınız kullanıcı adı
+      - SPRING_DATASOURCE_PASSWORD=npg_LqFNt8fcR6De
+
     networks:
       - hr-network
 
@@ -156,10 +154,9 @@ services:
     ports:
       - "8088:8088"
     environment:
-      - SPRING_DATASOURCE_URL=jdbc:postgresql://postgres-db:5432/notification_db
-    depends_on:
-      postgres-db:
-        condition: service_healthy
+      - SPRING_DATASOURCE_URL=jdbc:postgresql://ep-floral-wildflower-ag6dsgcp-pooler.c-2.eu-central-1.aws.neon.tech/notification_db?sslmode=require&channel_binding=require
+      - SPRING_DATASOURCE_USERNAME=neondb_owner # Neon'dan aldığınız kullanıcı adı
+      - SPRING_DATASOURCE_PASSWORD=npg_LqFNt8fcR6De
     networks:
       - hr-network
 
