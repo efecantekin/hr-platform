@@ -93,8 +93,8 @@ export default function EmployeesPage() {
     e.preventDefault();
 
     // Basit Validasyon
-    if (!formData.department || !formData.jobTitle) {
-      alert("Lütfen Departman ve Unvan seçiniz.");
+    if (!formData.jobTitle) {
+      alert("Lütfen ünvan seçiniz.");
       return;
     }
 
