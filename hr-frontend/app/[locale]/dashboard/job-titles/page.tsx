@@ -8,26 +8,42 @@ import Card from "../../../../components/ui/Card";
 import Modal from "../../../../components/ui/Modal";
 import DataTable, { Column } from "../../../../components/ui/Table";
 import { JobTitle } from "../../../../types";
+import Select from "../../../../components/ui/Select"; // Select eklendi
+import Badge from "../../../../components/ui/Badge"; // Badge eklendi
+import { departmentService } from "../../../../services/departmentService";
+import Loading from "../../../../components/ui/Loading";
 
 export default function JobTitlesView() {
-  // State Tanımları
   const [list, setList] = useState<JobTitle[]>([]);
+  // Select bileşeni için uygun format
+  const [departments, setDepartments] = useState<{value: string | number, label: string}[]>([]);
   const [loading, setLoading] = useState(true);
   const [showModal, setShowModal] = useState(false);
-
-  // Form ve Arama State'leri
+  
+  // Form State
   const [title, setTitle] = useState("");
+  const [selectedDepartment, setSelectedDepartment] = useState("");
   const [search, setSearch] = useState("");
 
-  // Sayfa Yüklendiğinde Veriyi Çek
   useEffect(() => {
-    fetchList();
+    loadData();
   }, []);
 
-  const fetchList = async () => {
+  const loadData = async () => {
     try {
-      const data = await jobTitleService.getAll();
-      setList(data);
+      const [titlesData, deptsData] = await Promise.all([
+          jobTitleService.getAll(),
+          departmentService.getAll()
+      ]);
+
+      setList(titlesData);
+      
+      // Departmanları Select bileşeni formatına ({value, label}) dönüştür
+      setDepartments(deptsData.map(d => ({ 
+          value: d.id, 
+          label: d.name 
+      })));
+
     } catch (err) {
       console.error("Veri hatası:", err);
     } finally {
@@ -35,60 +51,76 @@ export default function JobTitlesView() {
     }
   };
 
-  // Yeni Kayıt Ekleme
   const handleSubmit = async () => {
-    if (!title.trim()) {
-      alert("Lütfen bir unvan giriniz.");
-      return;
-    }
-
+    if (!title.trim()) return alert("Lütfen bir unvan giriniz.");
+    if (!selectedDepartment) return alert("Lütfen bir departman seçiniz.");
+    
     try {
-      await jobTitleService.create(title);
-      setShowModal(false); // Modalı kapat
-      setTitle(""); // Formu temizle
-      fetchList(); // Listeyi yenile
+      await jobTitleService.create({
+          title: title,
+          departmentId: Number(selectedDepartment)
+      });
+      
+      setShowModal(false); 
+      setTitle("");       
+      setSelectedDepartment(""); 
+      loadData();         
       alert("Unvan başarıyla eklendi!");
     } catch (err) {
       alert("Ekleme işlemi başarısız!");
+      console.error(err);
     }
   };
 
-  // Silme İşlemi
   const handleDelete = async (id: number) => {
     if (!confirm("Bu unvanı silmek istediğinize emin misiniz?")) return;
-
+    
     try {
       await jobTitleService.delete(id);
-      fetchList();
+      loadData();
     } catch (err) {
       alert("Hata: Bu unvan şu an bir çalışan tarafından kullanılıyor olabilir.");
     }
   };
 
-  // Client-Side Filtreleme (Arama)
-  const filteredList = list.filter((item) =>
+  // Client-Side Arama
+  const filteredList = list.filter(item => 
     item.title.toLowerCase().includes(search.toLowerCase())
   );
 
-  // --- TABLO KOLON TANIMLARI ---
+  // Tablo Kolon Tanımları
   const columns: Column<JobTitle>[] = [
     {
       header: "Unvan Adı",
-      accessorKey: "title", // JobTitle objesinde 'title' alanı var
-      className: "font-medium text-gray-900",
+      accessorKey: "title",
+      className: "font-medium text-gray-900"
+    },
+    {
+        header: "Bağlı Olduğu Departman",
+        cell: (item) => item.department ? (
+            <Badge variant="neutral">{item.department.name}</Badge>
+        ) : (
+            <span className="text-gray-400 text-xs">-</span>
+        )
     },
     {
       header: "İşlem",
       className: "text-right",
       cell: (item) => (
         <div className="flex justify-end">
-          <Button variant="danger" size="sm" onClick={() => handleDelete(item.id)}>
+          <Button 
+            variant="danger" 
+            size="sm" 
+            onClick={() => handleDelete(item.id)}
+          >
             Sil
           </Button>
         </div>
-      ),
-    },
+      )
+    }
   ];
+
+  if (loading) return <Loading />;
 
   return (
     <div className="min-h-screen bg-gray-50 p-8">
@@ -100,48 +132,51 @@ export default function JobTitlesView() {
 
       {/* ARAMA ALANI */}
       <div className="mb-4 max-w-md mx-auto">
-        <Input
-          placeholder="🔍 Unvan ara..."
-          value={search}
-          onChange={(e) => setSearch(e.target.value)}
+        <Input 
+            placeholder="🔍 Unvan ara..." 
+            value={search} 
+            onChange={(e) => setSearch(e.target.value)} 
         />
       </div>
 
       {/* TABLO */}
-      <div className="max-w-3xl mx-auto">
+      <div className="max-w-4xl mx-auto">
         <Card>
-          {loading ? (
-            <div className="p-8 text-center text-gray-500">Yükleniyor...</div>
-          ) : (
-            <DataTable
-              data={filteredList}
-              columns={columns}
-              emptyMessage="Kayıtlı unvan bulunamadı."
+            <DataTable 
+                data={filteredList} 
+                columns={columns} 
+                emptyMessage="Kayıtlı unvan bulunamadı." 
             />
-          )}
         </Card>
       </div>
 
       {/* EKLEME MODALI */}
-      <Modal
-        isOpen={showModal}
-        onClose={() => setShowModal(false)}
-        title="Yeni Unvan Ekle"
+      <Modal 
+        isOpen={showModal} 
+        onClose={() => setShowModal(false)} 
+        title="Yeni Unvan Ekle" 
         footer={
-          <>
-            <Button variant="secondary" onClick={() => setShowModal(false)}>
-              İptal
-            </Button>
-            <Button onClick={handleSubmit}>Kaydet</Button>
-          </>
+            <>
+                <Button variant="secondary" onClick={() => setShowModal(false)}>İptal</Button>
+                <Button onClick={handleSubmit}>Kaydet</Button>
+            </>
         }
       >
-        <Input
-          label="Unvan Adı"
-          placeholder="Örn: Senior Developer"
-          value={title}
-          onChange={(e) => setTitle(e.target.value)}
-        />
+        <div className="space-y-4">
+            <Input 
+                label="Unvan Adı" 
+                placeholder="Örn: Senior Developer" 
+                value={title} 
+                onChange={(e) => setTitle(e.target.value)} 
+            />
+            
+            <Select 
+                label="Bağlı Olduğu Departman"
+                options={departments}
+                value={selectedDepartment}
+                onChange={(e) => setSelectedDepartment(e.target.value)}
+            />
+        </div>
       </Modal>
     </div>
   );
