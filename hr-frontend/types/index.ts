@@ -88,8 +88,10 @@ export interface Position {
 }
 
 export interface JobTitle {
-  id: number;
-  title: string;
+    id: number;
+    title: string;
+    department?: Department; // Backend artık departman objesini de dönecek
+    departmentId?: number;   // Ekleme yaparken ID göndereceğiz
 }
 
 export interface Candidate {
@@ -106,6 +108,31 @@ export interface Candidate {
   referenceType: string; // INTERNAL, EXTERNAL
   referenceName: string;
   status: string;
+}
+
+export interface JobPosition {
+  id: number;
+  title: string;
+  customer: string;
+  requirements: string;
+  description: string;
+  assignedHrId: number;
+  hiringManagerId: number;
+  status: 'OPEN' | 'CLOSED';
+  createdAt?: string;
+  applications?: JobApplication[];
+}
+
+export interface JobApplication {
+  id: number;
+  jobPositionId?: number;
+  candidateId?: number;
+  employeeId?: number;
+  candidateName?: string;
+  source: 'INTERNAL' | 'EXTERNAL';
+  status: string;
+  applicationDate?: string;
+  notes?: string;
 }
 
 export type QuestionType = "TEXT" | "RATING" | "MULTIPLE_CHOICE";

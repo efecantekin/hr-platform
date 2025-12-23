@@ -24,3 +24,5 @@ postgres-data/
 
 # --- Loglar ---
 *.log
+
+docker-compose.override.yml

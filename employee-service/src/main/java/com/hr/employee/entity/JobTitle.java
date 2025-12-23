@@ -13,4 +13,8 @@ public class JobTitle {
 
     @Column(nullable = false, unique = true)
     private String title; 
+
+    @ManyToOne
+    @JoinColumn(name = "department_id")
+    private Department department;
 }

@@ -5,12 +5,14 @@ import com.hr.employee.dto.HierarchyAssignmentRequest;
 import com.hr.employee.dto.RegisterRequest;
 import com.hr.employee.entity.Employee;
 import com.hr.employee.repository.EmployeeRepository;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 
 @Service
+@Slf4j
 public class EmployeeService {
 
     private final EmployeeRepository repository;
@@ -33,7 +35,7 @@ public class EmployeeService {
             );
             authClient.registerUser(registerRequest);
         } catch (Exception e) {
-            System.err.println("Kullanıcı hesabı oluşturulamadı: " + e.getMessage());
+            log.error("Kullanıcı hesabı oluşturulamadı: {}", e.getMessage());
         }
         return savedEmployee;
     }
@@ -54,11 +56,11 @@ public class EmployeeService {
         // 3. Yöneticinin Rolünü "MANAGER" Olarak Güncelle (HER DURUMDA ÇALIŞMALI)
         // Pozisyon değişse de değişmese de, altına adam aldıysa yöneticidir.
         try {
-            System.out.println("Yönetici rolü güncelleniyor: EmployeeID=" + manager.getId());
+            log.info("Yönetici rolü güncelleniyor: EmployeeID={}", manager.getId());
             authClient.updateUserRole(manager.getId(), "MANAGER");
-            System.out.println("Yönetici rolü başarıyla güncellendi.");
+            log.info("Yönetici rolü başarıyla güncellendi.");
         } catch (Exception e) {
-            System.err.println("DİKKAT: Yönetici rolü güncellenemedi! Hata: " + e.getMessage());
+            log.error("DİKKAT: Yönetici rolü güncellenemedi! Hata: {}", e.getMessage());
             // Hata fırlatmıyoruz, çünkü atama işlemi rol güncellemesinden daha kritik.
         }
 
