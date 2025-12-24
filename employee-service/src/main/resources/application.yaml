@@ -5,25 +5,24 @@ spring:
   application:
     name: employee-service
   
-  datasource:
-    url: jdbc:postgresql://localhost:5432/employee_db
-    username: hr_admin
-    password: hr_password
+  datasource: 
+    # Yerel Docker DB yerine dışarıdan (environment variable) gelen bulut DB adresini kullanıyoruz
+    url: ${SPRING_DATASOURCE_URL:jdbc:postgresql://localhost:5432/employee_db}
+    username: ${SPRING_DATASOURCE_USERNAME:neondb_owner}
+    password: ${SPRING_DATASOURCE_PASSWORD:npg_LqFNt8fcR6De}
     driver-class-name: org.postgresql.Driver
   
   jpa:
-    database-platform: org.hibernate.dialect.PostgreSQLDialect
     hibernate:
       ddl-auto: update
     show-sql: true
 
-management:
-  endpoints:
-    web:
-      exposure:
-        include: health, info
-        
-# Feign Client Ayarı
-# Docker içinde çalışırken "http://auth-service:8082" adresini kullanacak
-# Localde çalışırken "http://localhost:8082" adresini kullanacak (varsayılan)
-AUTH_SERVICE_URL: ${AUTH_URI:http://localhost:8082}
+  # --- HATA ÇÖZÜMÜ: RABBITMQ BAĞLANTI AYARLARI ---
+  rabbitmq:
+    host: rabbitmq # localhost yerine Docker servis adı kullanılmalı
+    port: 5672
+    username: guest
+    password: guest
+
+# Auth servis adresi
+AUTH_SERVICE_URL: ${AUTH_URI:http://auth-service:8082}
