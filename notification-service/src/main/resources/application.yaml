@@ -6,9 +6,9 @@ spring:
     name: notification-service
 
   datasource:
-    url: jdbc:postgresql://postgres-db:5432/notification_db
-    username: hr_admin
-    password: hr_password
+    url: jdbc:postgresql://ep-floral-wildflower-ag6dsgcp-pooler.c-2.eu-central-1.aws.neon.tech/notification_db?sslmode=require&channel_binding=require
+    username: neondb_owner
+    password: npg_LqFNt8fcR6De
     driver-class-name: org.postgresql.Driver
 
   jpa:
@@ -20,11 +20,17 @@ spring:
   mail:
     host: smtp.gmail.com
     port: 587
-    username: senin_emailin@gmail.com # BURAYI DOLDUR
-    password: senin_app_sifren # BURAYI DOLDUR (Google App Password)
+    username: efecantekin@gmail.com # BURAYI DOLDUR
+    password: efeKSK1912! # BURAYI DOLDUR (Google App Password)
     properties:
       mail:
         smtp:
           auth: true
           starttls:
             enable: true
+
+  rabbitmq:
+    host: rabbitmq # Docker Compose'daki servis adı
+    port: 5672
+    username: guest
+    password: guest

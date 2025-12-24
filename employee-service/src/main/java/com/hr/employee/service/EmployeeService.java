@@ -4,11 +4,13 @@ import com.hr.employee.client.AuthClient;
 import com.hr.employee.dto.HierarchyAssignmentRequest;
 import com.hr.employee.dto.RegisterRequest;
 import com.hr.employee.entity.Employee;
+import com.hr.employee.event.EmployeeAssignedEvent;
 import com.hr.employee.repository.EmployeeRepository;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-
+import org.springframework.amqp.rabbit.core.RabbitTemplate;
+import java.time.LocalDate;
 import java.util.List;
 
 @Service
@@ -17,10 +19,12 @@ public class EmployeeService {
 
     private final EmployeeRepository repository;
     private final AuthClient authClient;
+    private final RabbitTemplate rabbitTemplate;
 
-    public EmployeeService(EmployeeRepository repository, AuthClient authClient) {
+    public EmployeeService(EmployeeRepository repository, AuthClient authClient, RabbitTemplate rabbitTemplate) {
         this.repository = repository;
         this.authClient = authClient;
+        this.rabbitTemplate = rabbitTemplate;
     }
 
     @Transactional
@@ -72,8 +76,29 @@ public class EmployeeService {
             throw new RuntimeException("Kişi kendi kendini atayamaz.");
         }
         
-        subordinate.setManagerId(request.getManagerId());
-        return repository.save(subordinate);
+                subordinate.setManagerId(request.getManagerId());
+        Employee savedSub = repository.save(subordinate);
+
+        // --- YENİ: EVENT GÖNDERİMİ ---
+        try {
+            EmployeeAssignedEvent event = new EmployeeAssignedEvent(
+                savedSub.getId(),
+                savedSub.getFirstName() + " " + savedSub.getLastName(),
+                savedSub.getEmail(),
+                manager.getId(),
+                manager.getFirstName() + " " + manager.getLastName(),
+                manager.getEmail(),
+                LocalDate.now()
+            );
+
+            // RabbitMQ'ya gönder (Routing key: notification.employee.assigned)
+            rabbitTemplate.convertAndSend("hr-exchange", "notification.employee.assigned", event);
+            System.out.println("🐇 Hiyerarşi atama eventi gönderildi.");
+        } catch (Exception e) {
+            System.err.println("Event gönderim hatası: " + e.getMessage());
+        }
+
+        return savedSub;
     }
     
     public List<Employee> getAllEmployees() { return repository.findAll(); }

@@ -1,11 +1,13 @@
 package com.hr.leave.service;
 
 import com.hr.leave.client.EmployeeClient;
-import com.hr.leave.client.NotificationClient;
-import com.hr.leave.dto.NotificationRequest;
+// NotificationClient importunu sildik çünkü artık RabbitMQ kullanacağız
+import com.hr.leave.config.RabbitMQConfig;
+import com.hr.leave.event.LeaveCreatedEvent;
 import com.hr.leave.entity.LeaveRequest;
 import com.hr.leave.repository.LeaveRepository;
 import lombok.RequiredArgsConstructor;
+import org.springframework.amqp.rabbit.core.RabbitTemplate; // <--- YENİ: RabbitTemplate
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -18,77 +20,79 @@ import java.util.stream.Collectors;
 public class LeaveService {
 
     private final LeaveRepository repository;
-    
-    // Feign Client'ları buraya enjekte ediyoruz
-    private final NotificationClient notificationClient;
     private final EmployeeClient employeeClient;
+    
+    // Feign yerine RabbitMQ Template kullanıyoruz
+    private final RabbitTemplate rabbitTemplate;
 
-    // --- 1. İZİN TALEBİ OLUŞTURMA (BİLDİRİMLİ) ---
+    // --- 1. İZİN TALEBİ OLUŞTURMA (EVENT DRIVEN) ---
     @Transactional
     public LeaveRequest createLeaveRequest(LeaveRequest request) {
         // 1. Önce talebi veritabanına kaydet
         LeaveRequest savedRequest = repository.save(request);
 
-        // 2. Bildirim Gönderme Mantığı (Try-Catch içinde olmalı ki sistem çökmesin)
         try {
-            // A. İzni isteyen personelin bilgilerini çek
+            // İzni isteyen personelin bilgilerini çek
             EmployeeClient.EmployeeDto employee = employeeClient.getEmployeeById(request.getEmployeeId());
 
-            // B. Eğer yöneticisi varsa, yöneticiye bildirim gönder
-            if (employee.getManagerId() != null) {
-                // Yöneticinin bilgilerini çek (Email'ini almak için)
+            // Eğer yöneticisi varsa, yöneticiye bildirim için olay fırlat
+            if (employee != null && employee.getManagerId() != null) {
                 EmployeeClient.EmployeeDto manager = employeeClient.getEmployeeById(employee.getManagerId());
 
-                // C. Bildirim nesnesini hazırla
-                NotificationRequest notification = NotificationRequest.builder()
-                        .userId(manager.getId()) // Kime? (Yöneticiye)
-                        .title("Yeni İzin Talebi: " + employee.getFirstName() + " " + employee.getLastName())
-                        .message(employee.getFirstName() + ", " + request.getStartDate() + " tarihinden itibaren izin talep etti. Onayınızı bekliyor.")
-                        .targetUrl("/dashboard/leaves") // Yönetici tıkladığında buraya gitsin
-                        .sendEmail(true) // Email de atılsın
-                        .emailTo(manager.getEmail()) // Yöneticinin maili
-                        .build();
+                if (manager != null) {
+                    // EVENT OLUŞTUR
+                    LeaveCreatedEvent event = new LeaveCreatedEvent(
+                        manager.getId(),
+                        employee.getFirstName() + " " + employee.getLastName(),
+                        manager.getEmail(),
+                        request.getStartDate().toString(),
+                        request.getEndDate().toString()
+                    );
 
-                // D. Notification Service'e ateşle!
-                notificationClient.sendNotification(notification);
-                
-                System.out.println("🔔 Bildirim gönderildi: Yönetici ID " + manager.getId());
+                    // RABBITMQ'YA FIRLAT
+                    // (Exchange Adı, Routing Key, Veri)
+                    rabbitTemplate.convertAndSend(RabbitMQConfig.EXCHANGE_NAME, "notification.leave.created", event);
+                    
+                    System.out.println("🐇 Mesaj kuyruğa atıldı: " + event);
+                }
             }
-
         } catch (Exception e) {
-            // Diğer servisler kapalıysa veya hata varsa, sadece log bas, işlemi durdurma.
-            // Çünkü izin talebi veritabanına başarıyla kaydedildi.
-            System.err.println("⚠️ Bildirim gönderilemedi: " + e.getMessage());
+            // RabbitMQ kapalı olsa bile izin kaydı bozulmasın, sadece logla
+            System.err.println("Event hatası: " + e.getMessage());
         }
 
         return savedRequest;
     }
 
+    // --- 2. YÖNETİCİYE ÖZEL BEKLEYEN İZİNLERİ GETİR ---
     public List<LeaveRequest> getPendingLeavesForManager(Long managerId) {
-        // A. Yöneticinin ekibini Employee Service'den çek
+        try {
+            List<EmployeeClient.EmployeeDto> team = employeeClient.getEmployeesByManager(managerId);
+            
+            if (team == null || team.isEmpty()) {
+                return new ArrayList<>();
+            }
 
-        List<EmployeeClient.EmployeeDto> team = employeeClient.getEmployeesByManager(managerId);
-        System.out.println("TEAM =>" + team);
-        // Ekip yoksa boş liste dön
-        if (team == null || team.isEmpty()) {
+            List<Long> teamIds = team.stream()
+                                    .map(EmployeeClient.EmployeeDto::getId)
+                                    .collect(Collectors.toList());
+
+            if (teamIds.isEmpty()) {
+                return new ArrayList<>();
+            }
+
+            return repository.findByEmployeeIdInAndStatus(teamIds, "PENDING");
+            
+        } catch (Exception e) {
+            System.err.println("Ekip izinleri çekilemedi: " + e.getMessage());
             return new ArrayList<>();
         }
-
-        // B. Ekipteki çalışanların ID'lerini bir listeye topla
-        List<Long> teamIds = team.stream()
-                                 .map(EmployeeClient.EmployeeDto::getId)
-                                 .collect(Collectors.toList());
-
-        // C. Sadece bu ID'lere sahip ve durumu 'PENDING' olan izinleri getir
-        return repository.findByEmployeeIdInAndStatus(teamIds, "PENDING");
     }
+
+    // --- DİĞER METODLAR ---
 
     public List<LeaveRequest> getLeavesByEmployee(Long employeeId) {
         return repository.findByEmployeeId(employeeId);
-    }
-
-    public List<LeaveRequest> getLeavesByStatus(String status) {
-        return repository.findByStatus(status);
     }
     
     public List<LeaveRequest> getAllLeaves() {
@@ -100,10 +104,6 @@ public class LeaveService {
                 .orElseThrow(() -> new RuntimeException("İzin bulunamadı"));
         
         request.setStatus(newStatus);
-        
-        // Opsiyonel: Durum değişince çalışana da bildirim atılabilir ("İzniniz Onaylandı" gibi)
-        // Buraya benzer bir try-catch bloğu eklenebilir.
-        
         return repository.save(request);
     }
 }
